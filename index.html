@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>White Fox Traders — Official Reseller of Anker, Soundcore & UGreen in Nepal</title>
+<meta name="description" content="Authorized reseller of Anker, Soundcore and UGreen in Nepal. Shop genuine electronics, earbuds, chargers, cables and power banks. Pay with eSewa or FonePay."/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <img src="assets/logo.png" alt="White Fox Traders" class="nav-logo-img"/>
+    <div>
+      <div class="nav-logo-text">White Fox Traders</div>
+      <div class="nav-logo-sub">Official Reseller</div>
+    </div>
+  </a>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search Anker, Soundcore, UGreen..." id="search-input" oninput="doSearch(this.value)"/>
+  </div>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="openCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Authorized Reseller — Nepal</p>
+    <h1 class="hero-title">Premium tech,<br><span>genuine</span> products,<br>fast delivery.</h1>
+    <p class="hero-desc">Official reseller of Anker, Soundcore & UGreen in Nepal. 82 products with genuine warranty. Pay with eSewa or FonePay.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+      <button class="btn-outline" onclick="filterBrand('all')">All 82 Products</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-card"><div class="hero-card-icon">🎧</div><div class="hero-card-name">Soundcore Liberty 4 Pro</div><div class="hero-card-price">Rs 19,999</div></div>
+    <div class="hero-card"><div class="hero-card-icon">🔋</div><div class="hero-card-name">Anker Prime 20000mAh</div><div class="hero-card-price">Rs 17,499</div></div>
+    <div class="hero-card"><div class="hero-card-icon">⚡</div><div class="hero-card-name">UGreen Nexode 300W</div><div class="hero-card-price">Rs 18,999</div></div>
+    <div class="hero-card"><div class="hero-card-icon">🔊</div><div class="hero-card-name">Soundcore Rave 3S</div><div class="hero-card-price">Rs 39,999</div></div>
+  </div>
+</div>
+
+<div class="trust">
+  <div class="trust-item"><span class="trust-dot"></span>Authorized reseller</div>
+  <div class="trust-item"><span class="trust-dot"></span>Genuine warranty</div>
+  <div class="trust-item"><span class="trust-dot"></span>eSewa & FonePay accepted</div>
+  <div class="trust-item"><span class="trust-dot"></span>Fast delivery across Nepal</div>
+  <div class="trust-item"><span class="trust-dot"></span>24/7 support</div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Brand</div>
+      <button class="sidebar-btn active" onclick="filterBrand('all',this)" id="brand-all">All Brands <span class="count">82</span></button>
+      <button class="sidebar-btn" onclick="filterBrand('Anker',this)" id="brand-Anker"><span class="brand-dot" style="background:#185FA5"></span>Anker <span class="count">24</span></button>
+      <button class="sidebar-btn" onclick="filterBrand('Soundcore',this)" id="brand-Soundcore"><span class="brand-dot" style="background:#0F6E56"></span>Soundcore <span class="count">23</span></button>
+      <button class="sidebar-btn" onclick="filterBrand('UGreen',this)" id="brand-UGreen"><span class="brand-dot" style="background:#3B6D11"></span>UGreen <span class="count">35</span></button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Category</div>
+      <button class="sidebar-btn active" onclick="filterCat('all',this)" id="cat-all">All Categories <span class="count">82</span></button>
+      <button class="sidebar-btn" onclick="filterCat('earbuds',this)">Earbuds <span class="count">15</span></button>
+      <button class="sidebar-btn" onclick="filterCat('headphones',this)">Headphones <span class="count">6</span></button>
+      <button class="sidebar-btn" onclick="filterCat('speakers',this)">Speakers <span class="count">6</span></button>
+      <button class="sidebar-btn" onclick="filterCat('cables',this)">Cables <span class="count">19</span></button>
+      <button class="sidebar-btn" onclick="filterCat('chargers',this)">Chargers <span class="count">18</span></button>
+      <button class="sidebar-btn" onclick="filterCat('powerbanks',this)">Power Banks <span class="count">16</span></button>
+      <button class="sidebar-btn" onclick="filterCat('accessories',this)">Accessories <span class="count">3</span></button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Price</div>
+      <button class="sidebar-btn" onclick="filterPrice(0,2000,this)">Under Rs 2,000</button>
+      <button class="sidebar-btn" onclick="filterPrice(2000,5000,this)">Rs 2,000 – 5,000</button>
+      <button class="sidebar-btn" onclick="filterPrice(5000,10000,this)">Rs 5,000 – 10,000</button>
+      <button class="sidebar-btn" onclick="filterPrice(10000,999999,this)">Above Rs 10,000</button>
+    </div>
+  </div>
+  <div class="catalog">
+    <div class="catalog-header">
+      <div>
+        <div class="catalog-title" id="catalog-title">All Products</div>
+        <div class="catalog-meta" id="catalog-meta">82 products</div>
+      </div>
+      <select class="sort-select" onchange="doSort(this.value)">
+        <option value="default">Default</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="name-asc">Name: A–Z</option>
+      </select>
+    </div>
+    <div class="product-grid" id="product-grid"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <img src="assets/logo.png" alt="White Fox Traders" class="footer-logo-img"/>
+      <div class="footer-logo-name">White Fox Traders</div>
+      <div class="footer-tagline">Authorized reseller of Anker,<br>Soundcore & UGreen in Nepal.</div>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Shop</div>
+      <a href="#">Earbuds</a><a href="#">Headphones</a><a href="#">Speakers</a>
+      <a href="#">Cables</a><a href="#">Chargers</a><a href="#">Power Banks</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Info</div>
+      <a href="#">About Us</a><a href="#">Delivery Policy</a><a href="#">Returns</a>
+      <a href="#">Warranty</a><a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 White Fox Traders, Lakhe Tol-3, Changunarayan, Bhaktapur, Nepal · eSewa & FonePay accepted</div>
+</footer>
+
+<!-- CART -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-header"><h3>Your Cart</h3><button class="cart-close" onclick="closeCart()">✕</button></div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-total-row"><span class="cart-total-label">Total</span><span class="cart-total-amount" id="cart-total">Rs 0</span></div>
+    <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout</button>
+    <div class="payment-icons">
+      <span class="payment-icon esewa">eSewa</span>
+      <span class="payment-icon fonepay">FonePay</span>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout-page" id="checkout-page">
+  <div class="checkout-inner">
+    <button class="checkout-back" onclick="closeCheckout()">← Back to cart</button>
+    <img src="assets/logo.png" alt="WFT" class="checkout-logo"/>
+    <div class="checkout-title">Checkout</div>
+    <div class="checkout-section">
+      <div class="checkout-section-title">Delivery Details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" placeholder="Your full name"/></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="98XXXXXXXX"/></div>
+      </div>
+      <div class="form-group"><label>Delivery Address</label><input type="text" placeholder="Tole, Ward, Municipality"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>City</label><input type="text" placeholder="e.g. Bhaktapur"/></div>
+        <div class="form-group"><label>District</label>
+          <select><option>Kathmandu</option><option>Bhaktapur</option><option>Lalitpur</option><option>Pokhara</option><option>Chitwan</option><option>Other</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="checkout-section">
+      <div class="checkout-section-title">Payment Method</div>
+      <div class="payment-methods">
+        <div class="payment-method selected" id="pm-esewa" onclick="selectPayment('esewa')">
+          <div style="font-size:28px">💚</div>
+          <div class="payment-method-name" style="color:#60BB46">eSewa</div>
+          <div class="payment-method-desc">Digital wallet</div>
+        </div>
+        <div class="payment-method" id="pm-fonepay" onclick="selectPayment('fonepay')">
+          <div style="font-size:28px">📱</div>
+          <div class="payment-method-name" style="color:#e31f26">FonePay</div>
+          <div class="payment-method-desc">QR payment</div>
+        </div>
+      </div>
+    </div>
+    <div class="checkout-section">
+      <div class="checkout-section-title">Order Summary</div>
+      <div class="order-summary" id="order-summary"></div>
+    </div>
+    <button class="place-order-btn" onclick="placeOrder()">Place Order & Pay</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-page" id="success-page">
+  <img src="assets/logo.png" alt="WFT" class="success-logo"/>
+  <div class="success-icon">✅</div>
+  <div class="success-title">Order Placed!</div>
+  <div class="success-desc">Thank you for your order from White Fox Traders. You'll receive a confirmation on your phone. Delivery within 2–3 business days across Nepal.</div>
+  <button class="success-back" onclick="resetAll()">Continue Shopping</button>
+</div>
+
+<script src="products.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
