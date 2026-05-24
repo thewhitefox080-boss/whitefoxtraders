@@ -535,19 +535,21 @@ function render(){
   var html='';
   for(var i=0;i<d.length;i++){
     var x=d[i];
-    var idx=products.indexOf(x);
+    var pidx=products.indexOf(x);
     var imgHtml=x.images&&x.images.length?'<img src="'+x.images[0]+'" alt="'+x.name+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;padding:12px"/>':'';
-    html+='<div class="pcard" onclick="openDetail('+idx+')">';
+    html+='<div class="pcard" onclick="openDetail('+pidx+')">';
     html+='<div class="pcard-img"><span style="font-size:52px">'+x.icon+'</span>'+imgHtml+'<span class="pbrand pb-'+x.brand.toLowerCase()+'">'+x.brand+'</span></div>';
     html+='<div class="pcard-body"><div class="pcard-name">'+x.name+'</div>';
     html+='<div class="pcard-foot"><span class="pcard-price">'+fmt(x.price)+'</span>';
-    html+='<button class="add-circle" onclick="event.stopPropagation();addCart('+idx+',this)">+</button></div></div></div>';
+    html+='<button class="add-circle" onclick="event.stopPropagation();addCart('+pidx+',this)">+</button></div></div></div>';
   }
   g.innerHTML=html;
 }
 
-function openDetail(idx){
+function openDetail(pidx){
+  var idx=pidx;
   var p=products[idx];
+  if(!p){console.error('Product not found:',idx);return;}
   currentProduct=idx;
   var brandColors={Anker:'#185FA5',Soundcore:'#0F6E56',UGreen:'#3B6D11'};
   var badge=document.getElementById('detail-brand-badge');
