@@ -479,6 +479,27 @@ var products=[
 
 var cart=[],curP=null,fBrand='all',fCat='all',fPrice=null,fSort='def',fSearch='';
 var bColors={Anker:'#185FA5',Soundcore:'#0F6E56',UGreen:'#3B6D11'};
+var savedState=null;
+
+function saveFilterState(){
+  savedState={fBrand:fBrand,fCat:fCat,fPrice:fPrice,fSort:fSort,fSearch:fSearch};
+}
+
+function restoreFilterState(){
+  if(!savedState) return;
+  fBrand=savedState.fBrand; fCat=savedState.fCat;
+  fPrice=savedState.fPrice; fSort=savedState.fSort; fSearch=savedState.fSearch;
+  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.cat-btn').forEach(function(b){
+    var oc=b.getAttribute('onclick')||'';
+    if((fCat==='all'&&oc.indexOf("'all'")>-1)||(fCat!=='all'&&oc.indexOf("'"+fCat+"'")>-1)) b.classList.add('on');
+  });
+  document.querySelectorAll('.si').forEach(function(b){b.classList.remove('on');});
+  var bId=document.getElementById('sb-'+(fBrand==='all'?'all':fBrand));
+  if(bId) bId.classList.add('on');
+  var si=document.querySelector('.search-wrap input');
+  if(si) si.value=fSearch||'';
+}
 
 function fmt(n){return 'Rs '+n.toLocaleString();}
 
@@ -525,6 +546,7 @@ function showHome(){
 }
 
 function openDetail(ri){
+  saveFilterState();
   var p=products[ri];
   if(!p) return;
   curP=ri;
@@ -559,6 +581,7 @@ function openDetail(ri){
   fh+='</div>';
   document.getElementById('dfeats').innerHTML=fh;
   showPage('pg-detail');
+  history.pushState({ri:ri},'','');
 }
 
 function swImg(el){
@@ -574,16 +597,9 @@ function addFromDetail(){
 }
 
 function goHome(){
-  fBrand='all';fCat='all';fPrice=null;fSearch='';
-  document.querySelectorAll('.si').forEach(function(b){b.classList.remove('on');});
-  var all=document.getElementById('sb-all');
-  if(all) all.classList.add('on');
-  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('on');});
-  var catAll=document.querySelector('.cat-btn');
-  if(catAll) catAll.classList.add('on');
+  restoreFilterState();
   render();
   showHome();
-  setTimeout(function(){document.querySelector('.shop').scrollIntoView({behavior:'smooth'});},100);
 }
 
 function setBrand(b,btn){
@@ -683,7 +699,16 @@ function resetAll(){
   goHome();
 }
 
+// Handle browser back button
+window.addEventListener('popstate', function(){
+  restoreFilterState();
+  render();
+  showPage('pg-home');
+  window.scrollTo(0,0);
+});
+
 // Init
+history.replaceState({home:true},'','');
 render();
 </script>
 </body>
