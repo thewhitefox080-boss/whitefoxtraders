@@ -317,7 +317,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <button class="dback" onclick="goHome()">← Back to products</button>
     <div class="dlayout">
       <div class="dgallery">
-        <div class="dmain" id="dmain"><span id="dicon" style="font-size:90px"></span></div>
+        <div class="dmain" id="dmain"></div>
         <div class="dthumbs" id="dthumbs"></div>
       </div>
       <div class="dinfo">
@@ -514,23 +514,20 @@ function render(){
   g.innerHTML=h;
 }
 
-function showHome(){
-  document.getElementById('pg-home').classList.add('on');
-  document.getElementById('pg-detail').classList.remove('on');
+function showPage(id){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
   window.scrollTo(0,0);
 }
 
-function showDetail(){
-  document.getElementById('pg-home').classList.remove('on');
-  document.getElementById('pg-detail').classList.add('on');
-  window.scrollTo(0,0);
+function showHome(){
+  showPage('pg-home');
 }
 
 function openDetail(ri){
   var p=products[ri];
   if(!p) return;
   curP=ri;
-  document.getElementById('dicon').textContent=p.icon;
   var badge=document.getElementById('dbadge');
   badge.textContent=p.brand;
   badge.style.background=bColors[p.brand]||'#333';
@@ -546,8 +543,7 @@ function openDetail(ri){
     var thArr=[];
     for(var i=0;i<p.images.length;i++){
       var tc=i===0?'dthumb on':'dthumb';
-      var ts=p.images[i];
-      thArr.push('<div class="'+tc+'" onclick="swImg(this)"><img src="'+ts+'" alt="v'+i+'"/></div>');
+      thArr.push('<div class="'+tc+'" onclick="swImg(this)"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');
     }
     thumbs.innerHTML=thArr.join('');
   } else {
@@ -562,8 +558,7 @@ function openDetail(ri){
   for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';
   fh+='</div>';
   document.getElementById('dfeats').innerHTML=fh;
-  history.pushState({ri:ri},'','?p='+ri);
-  showDetail();
+  showPage('pg-detail');
 }
 
 function swImg(el){
@@ -587,7 +582,6 @@ function goHome(){
   var catAll=document.querySelector('.cat-btn');
   if(catAll) catAll.classList.add('on');
   render();
-  history.pushState({home:true},'',window.location.pathname);
   showHome();
   setTimeout(function(){document.querySelector('.shop').scrollIntoView({behavior:'smooth'});},100);
 }
@@ -689,29 +683,8 @@ function resetAll(){
   goHome();
 }
 
-// Browser back/forward
-window.addEventListener('popstate',function(e){
-  if(e.state&&e.state.ri!==undefined){
-    openDetail(e.state.ri);
-  } else {
-    showHome();
-    render();
-  }
-});
-
 // Init
 render();
-// Check if opened on a product page
-(function(){
-  var sp=new URLSearchParams(window.location.search);
-  var p=sp.get('p');
-  if(p!==null){
-    var ri=parseInt(p);
-    if(!isNaN(ri)&&products[ri]) openDetail(ri);
-  } else {
-    history.replaceState({home:true},'',window.location.pathname);
-  }
-})();
 </script>
 </body>
 </html>
