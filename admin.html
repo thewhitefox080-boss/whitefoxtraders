@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>White Fox Traders — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f5f5f7;color:#0a0a0a;font-size:14px;-webkit-font-smoothing:antialiased}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;border:0.5px solid #e8e8ed;border-radius:18px;padding:40px;width:100%;max-width:380px;text-align:center}
+.login-logo{font-size:32px;margin-bottom:8px}
+.login-title{font-size:22px;font-weight:600;letter-spacing:-0.5px;margin-bottom:4px}
+.login-sub{font-size:13px;color:#86868b;margin-bottom:28px}
+.login-box input{width:100%;padding:12px 14px;border:1px solid #e8e8ed;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:12px;transition:border 0.2s}
+.login-box input:focus{border-color:#0a0a0a}
+.login-btn{width:100%;padding:12px;background:#0a0a0a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
+.login-btn:hover{opacity:0.85}
+.login-err{color:#e30000;font-size:13px;margin-top:10px;display:none}
+.admin-wrap{display:none;min-height:100vh}
+nav{background:#fff;border-bottom:0.5px solid #e8e8ed;padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:10px}
+.nav-title{font-size:15px;font-weight:600;letter-spacing:-0.3px}
+.nav-badge{background:#0a0a0a;color:#fff;font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px}
+.logout-btn{background:transparent;border:1px solid #e8e8ed;padding:6px 14px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
+.logout-btn:hover{background:#f5f5f7}
+.main{padding:28px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:#fff;border:0.5px solid #e8e8ed;border-radius:14px;padding:20px}
+.stat-label{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#86868b;margin-bottom:6px}
+.stat-val{font-size:28px;font-weight:600;letter-spacing:-1px}
+.stat-sub{font-size:12px;color:#86868b;margin-top:2px}
+.orders-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.orders-title{font-size:18px;font-weight:600;letter-spacing:-0.5px}
+.refresh-btn{background:#f5f5f7;border:none;padding:7px 14px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
+.refresh-btn:hover{background:#e8e8ed}
+.filter-row{display:flex;gap:8px;margin-bottom:16px}
+.fbtn{background:#fff;border:0.5px solid #e8e8ed;padding:6px 14px;border-radius:100px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.fbtn:hover{border-color:#0a0a0a}
+.fbtn.on{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.table-wrap{background:#fff;border:0.5px solid #e8e8ed;border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#86868b;border-bottom:0.5px solid #e8e8ed;background:#f5f5f7}
+td{padding:14px 16px;border-bottom:0.5px solid #f5f5f7;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.order-id{font-size:12px;color:#86868b;font-weight:500}
+.order-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.order-phone{font-size:12px;color:#86868b}
+.order-address{font-size:12px;color:#515154;line-height:1.5}
+.order-items{font-size:12px;color:#515154;line-height:1.6}
+.order-total{font-size:14px;font-weight:600;letter-spacing:-0.3px}
+.order-pay{font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px}
+.pay-esewa{background:#e8f5e9;color:#2d8a4e}
+.pay-fonepay{background:#fde8e8;color:#e31f26}
+.pay-cod{background:#f0f0f0;color:#515154}
+.order-date{font-size:12px;color:#86868b}
+.status-sel{border:0.5px solid #e8e8ed;border-radius:8px;padding:5px 8px;font-size:12px;font-family:'Inter',sans-serif;background:#fff;cursor:pointer;outline:none}
+.status-sel:focus{border-color:#0a0a0a}
+.empty{text-align:center;padding:60px;color:#86868b;font-size:14px}
+.loading{text-align:center;padding:40px;color:#86868b}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">🦊</div>
+    <div class="login-title">Admin Panel</div>
+    <div class="login-sub">White Fox Traders</div>
+    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="admin-wrap">
+  <nav>
+    <div class="nav-left">
+      <span class="nav-title">White Fox Traders</span>
+      <span class="nav-badge">Admin</span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign out</button>
+  </nav>
+  <div class="main">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val" id="st-total">—</div><div class="stat-sub">All time</div></div>
+      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" id="st-pending">—</div><div class="stat-sub">Awaiting action</div></div>
+      <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-val" id="st-revenue">—</div><div class="stat-sub">Total NPR</div></div>
+      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" id="st-today">—</div><div class="stat-sub">Orders today</div></div>
+    </div>
+    <div class="orders-hd">
+      <div class="orders-title">Orders</div>
+      <button class="refresh-btn" onclick="loadOrders()">↻ Refresh</button>
+    </div>
+    <div class="filter-row">
+      <button class="fbtn on" onclick="setFilter('all',this)">All</button>
+      <button class="fbtn" onclick="setFilter('pending',this)">Pending</button>
+      <button class="fbtn" onclick="setFilter('confirmed',this)">Confirmed</button>
+      <button class="fbtn" onclick="setFilter('delivered',this)">Delivered</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th><th>Customer</th><th>Delivery</th><th>Items</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody">
+          <tr><td colspan="8" class="loading">Loading orders...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+var API_URL = 'https://whitefoxtraders-backend-production.up.railway.app';
+var authToken = null;
+var allOrders = [];
+var currentFilter = 'all';
+
+function doLogin(){
+  var pw = document.getElementById('pw-input').value;
+  if(!pw){ return; }
+  document.querySelector('.login-btn').textContent = 'Signing in...';
+  fetch(API_URL + '/admin/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({password: pw})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    document.querySelector('.login-btn').textContent = 'Sign in';
+    if(data.success){
+      authToken = data.token;
+      document.getElementById('login-wrap').style.display = 'none';
+      document.getElementById('admin-wrap').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      loadOrders();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+    }
+  })
+  .catch(function(){
+    document.querySelector('.login-btn').textContent = 'Sign in';
+    document.getElementById('login-err').textContent = 'Could not connect. Try again.';
+    document.getElementById('login-err').style.display = 'block';
+  });
+}
+
+function doLogout(){
+  authToken = null;
+  allOrders = [];
+  document.getElementById('login-wrap').style.display = 'flex';
+  document.getElementById('admin-wrap').style.display = 'none';
+  document.getElementById('login-err').style.display = 'none';
+}
+
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderOrders();
+}
+
+function loadOrders(){
+  document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="8" class="loading">Loading orders...</td></tr>';
+  fetch(API_URL + '/orders', {
+    headers: {'Authorization': 'Bearer ' + authToken}
+  })
+  .then(function(r){
+    if(r.status === 401){ doLogout(); return null; }
+    return r.json();
+  })
+  .then(function(data){
+    if(!data) return;
+    allOrders = data;
+    updateStats();
+    renderOrders();
+  })
+  .catch(function(){
+    document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="8" class="empty">Could not load orders.</td></tr>';
+  });
+}
+
+function updateStats(){
+  var today = new Date().toDateString();
+  var pending = 0, revenue = 0, todayCount = 0;
+  for(var i=0;i<allOrders.length;i++){
+    var o = allOrders[i];
+    if(o.status === 'pending') pending++;
+    revenue += o.total;
+    if(new Date(o.created_at).toDateString() === today) todayCount++;
+  }
+  document.getElementById('st-total').textContent = allOrders.length;
+  document.getElementById('st-pending').textContent = pending;
+  document.getElementById('st-revenue').textContent = 'Rs ' + revenue.toLocaleString();
+  document.getElementById('st-today').textContent = todayCount;
+}
+
+function renderOrders(){
+  var filtered = allOrders;
+  if(currentFilter !== 'all') filtered = allOrders.filter(function(o){return o.status === currentFilter;});
+  if(!filtered.length){
+    document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="8" class="empty">No orders found.</td></tr>';
+    return;
+  }
+  var h = '';
+  for(var i=0;i<filtered.length;i++){
+    var o = filtered[i];
+    var payClass = o.payment_method === 'eSewa' ? 'pay-esewa' : o.payment_method === 'FonePay' ? 'pay-fonepay' : 'pay-cod';
+    var items = '';
+    if(o.items && o.items.length){
+      for(var j=0;j<o.items.length;j++) items += o.items[j].name + ' x' + o.items[j].qty + '<br>';
+    }
+    var date = new Date(o.created_at);
+    var dateStr = date.toLocaleDateString('en-NP',{day:'numeric',month:'short',year:'numeric'}) + '<br>' + date.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'});
+    h += '<tr>';
+    h += '<td><div class="order-id">#' + o.id + '</div></td>';
+    h += '<td><div class="order-name">' + o.name + '</div><div class="order-phone">' + o.phone + '</div></td>';
+    h += '<td><div class="order-address">' + o.address + '<br>' + o.city + ', ' + o.district + '</div></td>';
+    h += '<td><div class="order-items">' + items + '</div></td>';
+    h += '<td><div class="order-total">Rs ' + o.total.toLocaleString() + '</div></td>';
+    h += '<td><span class="order-pay ' + payClass + '">' + o.payment_method + '</span></td>';
+    h += '<td><div class="order-date">' + dateStr + '</div></td>';
+    h += '<td><select class="status-sel" onchange="updateStatus(' + o.id + ',this.value)">';
+    h += '<option value="pending"' + (o.status==='pending'?' selected':'') + '>Pending</option>';
+    h += '<option value="confirmed"' + (o.status==='confirmed'?' selected':'') + '>Confirmed</option>';
+    h += '<option value="delivered"' + (o.status==='delivered'?' selected':'') + '>Delivered</option>';
+    h += '<option value="cancelled"' + (o.status==='cancelled'?' selected':'') + '>Cancelled</option>';
+    h += '</select></td>';
+    h += '</tr>';
+  }
+  document.getElementById('orders-tbody').innerHTML = h;
+}
+
+function updateStatus(id, status){
+  fetch(API_URL + '/orders/' + id + '/status', {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer ' + authToken},
+    body: JSON.stringify({status: status})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.success){
+      for(var i=0;i<allOrders.length;i++){
+        if(allOrders[i].id === id) allOrders[i].status = status;
+      }
+      updateStats();
+    } else {
+      alert('Failed to update status.');
+    }
+  })
+  .catch(function(){alert('Could not update status.');});
+}
+</script>
+</body>
+</html>
