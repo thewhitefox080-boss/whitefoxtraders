@@ -360,13 +360,13 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <div class="co-title">Checkout</div>
     <p class="co-sec">Delivery</p>
     <div class="co-row2">
-      <div class="cofield"><label>Full name</label><input type="text" placeholder="Your full name"/></div>
-      <div class="cofield"><label>Phone</label><input type="tel" placeholder="98XXXXXXXX"/></div>
+      <div class="cofield"><label>Full name</label><input id="co-name" type="text" placeholder="Your full name"/></div>
+      <div class="cofield"><label>Phone</label><input id="co-phone" type="tel" placeholder="98XXXXXXXX"/></div>
     </div>
-    <div class="cofield"><label>Address</label><input type="text" placeholder="Tole, Ward, Municipality"/></div>
+    <div class="cofield"><label>Address</label><input id="co-address" type="text" placeholder="Tole, Ward, Municipality"/></div>
     <div class="co-row2">
-      <div class="cofield"><label>City</label><input type="text" placeholder="Bhaktapur"/></div>
-      <div class="cofield"><label>District</label><select><option>Kathmandu</option><option>Bhaktapur</option><option>Lalitpur</option><option>Pokhara</option><option>Chitwan</option><option>Other</option></select></div>
+      <div class="cofield"><label>City</label><input id="co-city" type="text" placeholder="Bhaktapur"/></div>
+      <div class="cofield"><label>District</label><select id="co-district"><option>Kathmandu</option><option>Bhaktapur</option><option>Lalitpur</option><option>Pokhara</option><option>Chitwan</option><option>Other</option></select></div>
     </div>
     <p class="co-sec" style="margin-top:16px">Payment</p>
     <div class="pay-grid">
@@ -693,7 +693,53 @@ function selPay(m){
   document.getElementById('po-f').classList.toggle('on',m==='f');
 }
 
-function placeOrder(){document.getElementById('co-pg').classList.remove('on');document.getElementById('succ-pg').classList.add('on');}
+var API_URL = 'https://whitefoxtraders-backend-production.up.railway.app';
+
+function placeOrder(){
+  var name = document.getElementById('co-name').value.trim();
+  var phone = document.getElementById('co-phone').value.trim();
+  var address = document.getElementById('co-address').value.trim();
+  var city = document.getElementById('co-city').value.trim();
+  var district = document.getElementById('co-district').value;
+  var payMethod = document.getElementById('po-f').classList.contains('on') ? 'FonePay' : 'eSewa';
+
+  if(!name || !phone || !address || !city){
+    alert('Please fill in all delivery details.');
+    return;
+  }
+
+  var total = 0;
+  for(var i=0;i<cart.length;i++) total += cart[i].price * cart[i].qty;
+
+  var orderData = {
+    name: name,
+    phone: phone,
+    address: address,
+    city: city,
+    district: district,
+    payment_method: payMethod,
+    total: total,
+    items: cart
+  };
+
+  fetch(API_URL + '/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(orderData)
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(data){
+    if(data.success){
+      document.getElementById('co-pg').classList.remove('on');
+      document.getElementById('succ-pg').classList.add('on');
+    } else {
+      alert('Something went wrong. Please try again.');
+    }
+  })
+  .catch(function(){
+    alert('Could not connect. Please check your internet and try again.');
+  });
+}
 
 function resetAll(){
   cart=[];updateBadge();
