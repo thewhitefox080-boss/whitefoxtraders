@@ -580,6 +580,7 @@ function openDetail(ri){
   for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';
   fh+='</div>';
   document.getElementById('dfeats').innerHTML=fh;
+  sessionStorage.setItem('lastProduct', ri);
   showPage('pg-detail');
   history.pushState({ri:ri},'','');
 }
@@ -597,6 +598,7 @@ function addFromDetail(){
 }
 
 function goHome(){
+  sessionStorage.removeItem('lastProduct');
   restoreFilterState();
   render();
   showHome();
@@ -701,6 +703,7 @@ function resetAll(){
 
 // Handle browser back button
 window.addEventListener('popstate', function(){
+  sessionStorage.removeItem('lastProduct');
   restoreFilterState();
   render();
   showPage('pg-home');
@@ -710,6 +713,10 @@ window.addEventListener('popstate', function(){
 // Init
 history.replaceState({home:true},'','');
 render();
+var _lp = sessionStorage.getItem('lastProduct');
+if(_lp !== null) {
+  openDetail(parseInt(_lp, 10));
+}
 </script>
 </body>
 </html>
