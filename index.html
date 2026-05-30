@@ -372,6 +372,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <div class="pay-grid">
       <div class="pcard-opt on" id="po-e" onclick="selPay('e')"><div style="font-size:24px">💚</div><div class="pcard-name" style="color:#2d8a4e">eSewa</div><div class="pcard-desc">Digital wallet</div></div>
       <div class="pcard-opt" id="po-f" onclick="selPay('f')"><div style="font-size:24px">📱</div><div class="pcard-name" style="color:#e31f26">FonePay</div><div class="pcard-desc">QR payment</div></div>
+      <div class="pcard-opt" id="po-c" onclick="selPay('c')"><div style="font-size:24px">💵</div><div class="pcard-name" style="color:#555">Cash on Delivery</div><div class="pcard-desc">Pay when delivered</div></div>
     </div>
     <p class="co-sec">Order summary</p>
     <div class="osum" id="osum"></div>
@@ -691,6 +692,7 @@ function renderSum(){
 function selPay(m){
   document.getElementById('po-e').classList.toggle('on',m==='e');
   document.getElementById('po-f').classList.toggle('on',m==='f');
+  document.getElementById('po-c').classList.toggle('on',m==='c');
 }
 
 var API_URL = 'https://whitefoxtraders-backend-production.up.railway.app';
@@ -701,7 +703,7 @@ function placeOrder(){
   var address = document.getElementById('co-address').value.trim();
   var city = document.getElementById('co-city').value.trim();
   var district = document.getElementById('co-district').value;
-  var payMethod = document.getElementById('po-f').classList.contains('on') ? 'FonePay' : 'eSewa';
+  var payMethod = document.getElementById('po-f').classList.contains('on') ? 'FonePay' : document.getElementById('po-c').classList.contains('on') ? 'COD' : 'eSewa';
 
   if(!name || !phone || !address || !city){
     alert('Please fill in all delivery details.');
