@@ -23,16 +23,25 @@ nav{background:#fff;border-bottom:0.5px solid #e8e8ed;padding:0 28px;height:52px
 .nav-left{display:flex;align-items:center;gap:10px}
 .nav-title{font-size:15px;font-weight:600;letter-spacing:-0.3px}
 .nav-badge{background:#0a0a0a;color:#fff;font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px}
+.nav-tabs{display:flex;gap:4px;margin-left:24px}
+.ntab{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;font-family:'Inter',sans-serif;color:#86868b}
+.ntab:hover{background:#f5f5f7;color:#0a0a0a}
+.ntab.on{background:#0a0a0a;color:#fff}
 .logout-btn{background:transparent;border:1px solid #e8e8ed;padding:6px 14px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
 .logout-btn:hover{background:#f5f5f7}
 .main{padding:28px}
+.tab-section{display:none}.tab-section.on{display:block}
+
+/* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
 .stat-card{background:#fff;border:0.5px solid #e8e8ed;border-radius:14px;padding:20px}
 .stat-label{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#86868b;margin-bottom:6px}
 .stat-val{font-size:28px;font-weight:600;letter-spacing:-1px}
 .stat-sub{font-size:12px;color:#86868b;margin-top:2px}
-.orders-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.orders-title{font-size:18px;font-weight:600;letter-spacing:-0.5px}
+
+/* ORDERS */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:18px;font-weight:600;letter-spacing:-0.5px}
 .refresh-btn{background:#f5f5f7;border:none;padding:7px 14px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
 .refresh-btn:hover{background:#e8e8ed}
 .filter-row{display:flex;gap:8px;margin-bottom:16px}
@@ -42,7 +51,7 @@ nav{background:#fff;border-bottom:0.5px solid #e8e8ed;padding:0 28px;height:52px
 .table-wrap{background:#fff;border:0.5px solid #e8e8ed;border-radius:14px;overflow:hidden}
 table{width:100%;border-collapse:collapse}
 th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#86868b;border-bottom:0.5px solid #e8e8ed;background:#f5f5f7}
-td{padding:14px 16px;border-bottom:0.5px solid #f5f5f7;vertical-align:top}
+td{padding:12px 16px;border-bottom:0.5px solid #f5f5f7;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafafa}
 .order-id{font-size:12px;color:#86868b;font-weight:500}
@@ -60,6 +69,28 @@ tr:hover td{background:#fafafa}
 .status-sel:focus{border-color:#0a0a0a}
 .empty{text-align:center;padding:60px;color:#86868b;font-size:14px}
 .loading{text-align:center;padding:40px;color:#86868b}
+
+/* PRODUCTS */
+.prod-search{width:100%;padding:10px 14px;border:0.5px solid #e8e8ed;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;outline:none;margin-bottom:16px}
+.prod-search:focus{border-color:#0a0a0a}
+.prod-table-wrap{background:#fff;border:0.5px solid #e8e8ed;border-radius:14px;overflow:hidden}
+.prod-img{width:44px;height:44px;object-fit:contain;background:#f5f5f7;border-radius:8px;padding:4px}
+.prod-name{font-size:13px;font-weight:500}
+.prod-brand{font-size:11px;color:#86868b;margin-top:2px}
+.prod-cat{font-size:11px;background:#f5f5f7;padding:2px 8px;border-radius:100px;color:#515154}
+.price-inp{border:0.5px solid #e8e8ed;border-radius:8px;padding:5px 8px;font-size:13px;font-family:'Inter',sans-serif;width:90px;outline:none}
+.price-inp:focus{border-color:#0a0a0a}
+.toggle-wrap{display:flex;align-items:center;gap:8px}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#e8e8ed;border-radius:100px;transition:0.2s}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:0.2s}
+.toggle input:checked + .toggle-slider{background:#0a0a0a}
+.toggle input:checked + .toggle-slider:before{transform:translateX(16px)}
+.save-btn{background:#0a0a0a;color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
+.save-btn:hover{opacity:0.8}
+.save-btn:disabled{opacity:0.4;cursor:default}
+.saved-flash{font-size:11px;color:#2d8a4e;display:none}
 </style>
 </head>
 <body>
@@ -76,44 +107,63 @@ tr:hover td{background:#fafafa}
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 <div class="admin-wrap" id="admin-wrap">
   <nav>
     <div class="nav-left">
       <span class="nav-title">White Fox Traders</span>
       <span class="nav-badge">Admin</span>
+      <div class="nav-tabs">
+        <button class="ntab on" onclick="switchTab('orders',this)">Orders</button>
+        <button class="ntab" onclick="switchTab('products',this)">Products</button>
+      </div>
     </div>
     <button class="logout-btn" onclick="doLogout()">Sign out</button>
   </nav>
+
   <div class="main">
-    <div class="stats">
-      <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val" id="st-total">—</div><div class="stat-sub">All time</div></div>
-      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" id="st-pending">—</div><div class="stat-sub">Awaiting action</div></div>
-      <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-val" id="st-revenue">—</div><div class="stat-sub">Total NPR</div></div>
-      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" id="st-today">—</div><div class="stat-sub">Orders today</div></div>
+
+    <!-- ORDERS TAB -->
+    <div class="tab-section on" id="tab-orders">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val" id="st-total">—</div><div class="stat-sub">All time</div></div>
+        <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" id="st-pending">—</div><div class="stat-sub">Awaiting action</div></div>
+        <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-val" id="st-revenue">—</div><div class="stat-sub">Total NPR</div></div>
+        <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" id="st-today">—</div><div class="stat-sub">Orders today</div></div>
+      </div>
+      <div class="section-hd">
+        <div class="section-title">Orders</div>
+        <button class="refresh-btn" onclick="loadOrders()">↻ Refresh</button>
+      </div>
+      <div class="filter-row">
+        <button class="fbtn on" onclick="setFilter('all',this)">All</button>
+        <button class="fbtn" onclick="setFilter('pending',this)">Pending</button>
+        <button class="fbtn" onclick="setFilter('confirmed',this)">Confirmed</button>
+        <button class="fbtn" onclick="setFilter('delivered',this)">Delivered</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Order</th><th>Customer</th><th>Delivery</th><th>Items</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="orders-tbody"><tr><td colspan="8" class="loading">Loading orders...</td></tr></tbody>
+        </table>
+      </div>
     </div>
-    <div class="orders-hd">
-      <div class="orders-title">Orders</div>
-      <button class="refresh-btn" onclick="loadOrders()">↻ Refresh</button>
+
+    <!-- PRODUCTS TAB -->
+    <div class="tab-section" id="tab-products">
+      <div class="section-hd">
+        <div class="section-title">Products</div>
+        <button class="refresh-btn" onclick="loadProducts()">↻ Refresh</button>
+      </div>
+      <input class="prod-search" type="text" placeholder="Search products..." oninput="filterProds(this.value)"/>
+      <div class="prod-table-wrap">
+        <table>
+          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>In Stock</th><th>New Arrival</th><th>Save</th></tr></thead>
+          <tbody id="products-tbody"><tr><td colspan="6" class="loading">Loading products...</td></tr></tbody>
+        </table>
+      </div>
     </div>
-    <div class="filter-row">
-      <button class="fbtn on" onclick="setFilter('all',this)">All</button>
-      <button class="fbtn" onclick="setFilter('pending',this)">Pending</button>
-      <button class="fbtn" onclick="setFilter('confirmed',this)">Confirmed</button>
-      <button class="fbtn" onclick="setFilter('delivered',this)">Delivered</button>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Order</th><th>Customer</th><th>Delivery</th><th>Items</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="orders-tbody">
-          <tr><td colspan="8" class="loading">Loading orders...</td></tr>
-        </tbody>
-      </table>
-    </div>
+
   </div>
 </div>
 
@@ -121,15 +171,15 @@ tr:hover td{background:#fafafa}
 var API_URL = 'https://whitefoxtraders-backend-production.up.railway.app';
 var authToken = null;
 var allOrders = [];
+var allProducts = [];
 var currentFilter = 'all';
 
 function doLogin(){
   var pw = document.getElementById('pw-input').value;
-  if(!pw){ return; }
+  if(!pw) return;
   document.querySelector('.login-btn').textContent = 'Signing in...';
   fetch(API_URL + '/admin/login', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
+    method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({password: pw})
   })
   .then(function(r){return r.json();})
@@ -155,12 +205,20 @@ function doLogin(){
 
 function doLogout(){
   authToken = null;
-  allOrders = [];
   document.getElementById('login-wrap').style.display = 'flex';
   document.getElementById('admin-wrap').style.display = 'none';
   document.getElementById('login-err').style.display = 'none';
 }
 
+function switchTab(tab, btn){
+  document.querySelectorAll('.ntab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  document.querySelectorAll('.tab-section').forEach(function(s){s.classList.remove('on');});
+  document.getElementById('tab-'+tab).classList.add('on');
+  if(tab === 'products' && allProducts.length === 0) loadProducts();
+}
+
+/* ---- ORDERS ---- */
 function setFilter(f, btn){
   currentFilter = f;
   document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('on');});
@@ -170,13 +228,8 @@ function setFilter(f, btn){
 
 function loadOrders(){
   document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="8" class="loading">Loading orders...</td></tr>';
-  fetch(API_URL + '/orders', {
-    headers: {'Authorization': 'Bearer ' + authToken}
-  })
-  .then(function(r){
-    if(r.status === 401){ doLogout(); return null; }
-    return r.json();
-  })
+  fetch(API_URL + '/orders', {headers:{'Authorization':'Bearer '+authToken}})
+  .then(function(r){ if(r.status===401){doLogout();return null;} return r.json(); })
   .then(function(data){
     if(!data) return;
     allOrders = data;
@@ -190,73 +243,130 @@ function loadOrders(){
 
 function updateStats(){
   var today = new Date().toDateString();
-  var pending = 0, revenue = 0, todayCount = 0;
+  var pending=0, revenue=0, todayCount=0;
   for(var i=0;i<allOrders.length;i++){
-    var o = allOrders[i];
-    if(o.status === 'pending') pending++;
-    revenue += o.total;
-    if(new Date(o.created_at).toDateString() === today) todayCount++;
+    var o=allOrders[i];
+    if(o.status==='pending') pending++;
+    revenue+=o.total;
+    if(new Date(o.created_at).toDateString()===today) todayCount++;
   }
   document.getElementById('st-total').textContent = allOrders.length;
   document.getElementById('st-pending').textContent = pending;
-  document.getElementById('st-revenue').textContent = 'Rs ' + revenue.toLocaleString();
+  document.getElementById('st-revenue').textContent = 'Rs '+revenue.toLocaleString();
   document.getElementById('st-today').textContent = todayCount;
 }
 
 function renderOrders(){
-  var filtered = allOrders;
-  if(currentFilter !== 'all') filtered = allOrders.filter(function(o){return o.status === currentFilter;});
+  var filtered = currentFilter==='all' ? allOrders : allOrders.filter(function(o){return o.status===currentFilter;});
   if(!filtered.length){
     document.getElementById('orders-tbody').innerHTML = '<tr><td colspan="8" class="empty">No orders found.</td></tr>';
     return;
   }
-  var h = '';
+  var h='';
   for(var i=0;i<filtered.length;i++){
-    var o = filtered[i];
-    var payClass = o.payment_method === 'eSewa' ? 'pay-esewa' : o.payment_method === 'FonePay' ? 'pay-fonepay' : 'pay-cod';
-    var items = '';
-    if(o.items && o.items.length){
-      for(var j=0;j<o.items.length;j++) items += o.items[j].name + ' x' + o.items[j].qty + '<br>';
-    }
-    var date = new Date(o.created_at);
-    var dateStr = date.toLocaleDateString('en-NP',{day:'numeric',month:'short',year:'numeric'}) + '<br>' + date.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'});
-    h += '<tr>';
-    h += '<td><div class="order-id">#' + o.id + '</div></td>';
-    h += '<td><div class="order-name">' + o.name + '</div><div class="order-phone">' + o.phone + '</div></td>';
-    h += '<td><div class="order-address">' + o.address + '<br>' + o.city + ', ' + o.district + '</div></td>';
-    h += '<td><div class="order-items">' + items + '</div></td>';
-    h += '<td><div class="order-total">Rs ' + o.total.toLocaleString() + '</div></td>';
-    h += '<td><span class="order-pay ' + payClass + '">' + o.payment_method + '</span></td>';
-    h += '<td><div class="order-date">' + dateStr + '</div></td>';
-    h += '<td><select class="status-sel" onchange="updateStatus(' + o.id + ',this.value)">';
-    h += '<option value="pending"' + (o.status==='pending'?' selected':'') + '>Pending</option>';
-    h += '<option value="confirmed"' + (o.status==='confirmed'?' selected':'') + '>Confirmed</option>';
-    h += '<option value="delivered"' + (o.status==='delivered'?' selected':'') + '>Delivered</option>';
-    h += '<option value="cancelled"' + (o.status==='cancelled'?' selected':'') + '>Cancelled</option>';
-    h += '</select></td>';
-    h += '</tr>';
+    var o=filtered[i];
+    var pc=o.payment_method==='eSewa'?'pay-esewa':o.payment_method==='FonePay'?'pay-fonepay':'pay-cod';
+    var items='';
+    if(o.items&&o.items.length) for(var j=0;j<o.items.length;j++) items+=o.items[j].name+' x'+o.items[j].qty+'<br>';
+    var d=new Date(o.created_at);
+    var ds=d.toLocaleDateString('en-NP',{day:'numeric',month:'short',year:'numeric'})+'<br>'+d.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'});
+    h+='<tr>';
+    h+='<td><div class="order-id">#'+o.id+'</div></td>';
+    h+='<td><div class="order-name">'+o.name+'</div><div class="order-phone">'+o.phone+'</div></td>';
+    h+='<td><div class="order-address">'+o.address+'<br>'+o.city+', '+o.district+'</div></td>';
+    h+='<td><div class="order-items">'+items+'</div></td>';
+    h+='<td><div class="order-total">Rs '+o.total.toLocaleString()+'</div></td>';
+    h+='<td><span class="order-pay '+pc+'">'+o.payment_method+'</span></td>';
+    h+='<td><div class="order-date">'+ds+'</div></td>';
+    h+='<td><select class="status-sel" onchange="updateOrderStatus('+o.id+',this.value)">';
+    h+='<option value="pending"'+(o.status==='pending'?' selected':'')+'>Pending</option>';
+    h+='<option value="confirmed"'+(o.status==='confirmed'?' selected':'')+'>Confirmed</option>';
+    h+='<option value="delivered"'+(o.status==='delivered'?' selected':'')+'>Delivered</option>';
+    h+='<option value="cancelled"'+(o.status==='cancelled'?' selected':'')+'>Cancelled</option>';
+    h+='</select></td>';
+    h+='</tr>';
   }
   document.getElementById('orders-tbody').innerHTML = h;
 }
 
-function updateStatus(id, status){
-  fetch(API_URL + '/orders/' + id + '/status', {
-    method: 'PATCH',
-    headers: {'Content-Type':'application/json','Authorization':'Bearer ' + authToken},
-    body: JSON.stringify({status: status})
+function updateOrderStatus(id, status){
+  fetch(API_URL+'/orders/'+id+'/status', {
+    method:'PATCH', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body: JSON.stringify({status:status})
   })
   .then(function(r){return r.json();})
   .then(function(data){
-    if(data.success){
-      for(var i=0;i<allOrders.length;i++){
-        if(allOrders[i].id === id) allOrders[i].status = status;
-      }
-      updateStats();
-    } else {
-      alert('Failed to update status.');
-    }
+    if(data.success){ for(var i=0;i<allOrders.length;i++) if(allOrders[i].id===id) allOrders[i].status=status; updateStats(); }
+    else alert('Failed to update status.');
   })
   .catch(function(){alert('Could not update status.');});
+}
+
+/* ---- PRODUCTS ---- */
+function loadProducts(){
+  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="6" class="loading">Loading products...</td></tr>';
+  fetch(API_URL+'/admin/products', {headers:{'Authorization':'Bearer '+authToken}})
+  .then(function(r){ if(r.status===401){doLogout();return null;} return r.json(); })
+  .then(function(data){
+    if(!data) return;
+    allProducts = data;
+    renderProducts(allProducts);
+  })
+  .catch(function(){
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="6" class="empty">Could not load products.</td></tr>';
+  });
+}
+
+function filterProds(val){
+  var q = val.toLowerCase();
+  var filtered = allProducts.filter(function(p){ return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q); });
+  renderProducts(filtered);
+}
+
+function renderProducts(list){
+  if(!list.length){
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="6" class="empty">No products found.</td></tr>';
+    return;
+  }
+  var h='';
+  for(var i=0;i<list.length;i++){
+    var p=list[i];
+    var img = p.images && p.images.length ? '<img class="prod-img" src="'+p.images[0]+'" alt=""/>' : '<div class="prod-img" style="display:flex;align-items:center;justify-content:center;font-size:22px">'+p.icon+'</div>';
+    h+='<tr id="pr-'+p.id+'">';
+    h+='<td><div style="display:flex;align-items:center;gap:12px">'+img+'<div><div class="prod-name">'+p.name+'</div><div class="prod-brand">'+p.brand+'</div></div></div></td>';
+    h+='<td><span class="prod-cat">'+p.cat+'</span></td>';
+    h+='<td><input class="price-inp" type="number" value="'+p.price+'" id="price-'+p.id+'"/></td>';
+    h+='<td><label class="toggle"><input type="checkbox"'+(p.in_stock?' checked':'')+' id="stock-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
+    h+='<td><label class="toggle"><input type="checkbox"'+(p.is_new?' checked':'')+' id="new-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
+    h+='<td><button class="save-btn" onclick="saveProduct('+p.id+',this)">Save</button><span class="saved-flash" id="flash-'+p.id+'">Saved ✓</span></td>';
+    h+='</tr>';
+  }
+  document.getElementById('products-tbody').innerHTML = h;
+}
+
+function saveProduct(id, btn){
+  var price = parseInt(document.getElementById('price-'+id).value);
+  var inStock = document.getElementById('stock-'+id).checked;
+  var isNew = document.getElementById('new-'+id).checked;
+  if(isNaN(price) || price < 0){ alert('Invalid price.'); return; }
+  btn.disabled = true;
+  btn.textContent = '...';
+  fetch(API_URL+'/admin/products/'+id, {
+    method:'PATCH', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body: JSON.stringify({price:price, in_stock:inStock, is_new:isNew})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.disabled = false;
+    btn.textContent = 'Save';
+    if(data.success){
+      var flash = document.getElementById('flash-'+id);
+      flash.style.display = 'inline';
+      setTimeout(function(){ flash.style.display='none'; }, 2000);
+      for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ allProducts[i].price=price; allProducts[i].in_stock=inStock; allProducts[i].is_new=isNew; }
+    } else { alert('Failed to save.'); }
+  })
+  .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
 }
 </script>
 </body>
