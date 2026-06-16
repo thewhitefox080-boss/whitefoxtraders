@@ -247,7 +247,7 @@ function updateStats(){
   for(var i=0;i<allOrders.length;i++){
     var o=allOrders[i];
     if(o.status==='pending') pending++;
-    revenue+=o.total;
+    if(o.status!=='cancelled') revenue+=o.total;
     if(new Date(o.created_at).toDateString()===today) todayCount++;
   }
   document.getElementById('st-total').textContent = allOrders.length;
