@@ -440,6 +440,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
       <div class="cofield"><label>Full name</label><input id="co-name" type="text" placeholder="Your full name"/></div>
       <div class="cofield"><label>Phone</label><input id="co-phone" type="tel" placeholder="98XXXXXXXX"/></div>
     </div>
+    <div class="cofield"><label>Email <span style="color:var(--g3);font-weight:400">(optional, for order confirmation)</span></label><input id="co-email" type="email" placeholder="you@example.com"/></div>
     <div class="cofield"><label>Address</label><input id="co-address" type="text" placeholder="Tole, Ward, Municipality"/></div>
     <div class="co-row2">
       <div class="cofield"><label>City</label><input id="co-city" type="text" placeholder="Bhaktapur"/></div>
@@ -694,6 +695,7 @@ function selPay(m){
 function placeOrder(){
   var name = document.getElementById('co-name').value.trim();
   var phone = document.getElementById('co-phone').value.trim();
+  var email = document.getElementById('co-email').value.trim();
   var address = document.getElementById('co-address').value.trim();
   var city = document.getElementById('co-city').value.trim();
   var district = document.getElementById('co-district').value;
@@ -704,12 +706,18 @@ function placeOrder(){
     return;
   }
 
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    alert('Please enter a valid email address, or leave it blank.');
+    return;
+  }
+
   var total = 0;
   for(var i=0;i<cart.length;i++) total += cart[i].price * cart[i].qty;
 
   var orderData = {
     name: name,
     phone: phone,
+    email: email || null,
     address: address,
     city: city,
     district: district,
