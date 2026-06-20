@@ -322,7 +322,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <div class="spec-grid">
       <div class="spec-cell"><div class="spec-ico">✓</div><div class="spec-val">100%</div><div class="spec-lbl">Genuine products</div></div>
       <div class="spec-cell"><div class="spec-ico">📦</div><div class="spec-val">2–3</div><div class="spec-lbl">Day delivery</div></div>
-      <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val">2yr</div><div class="spec-lbl">Warranty</div></div>
+      <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val">Up to 2yr</div><div class="spec-lbl">Warranty</div></div>
       <div class="spec-cell"><div class="spec-ico">💳</div><div class="spec-val">82</div><div class="spec-lbl">Products in stock</div></div>
     </div>
   </div>
@@ -409,7 +409,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
         </div>
         <div id="dspecs"></div>
         <div id="dfeats"></div>
-        <div class="dwarranty">🛡️ &nbsp; 2-year warranty · Authorized White Fox Traders reseller</div>
+        <div id="dwarranty" class="dwarranty"></div>
       </div>
     </div>
   </div>
@@ -440,7 +440,6 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
       <div class="cofield"><label>Full name</label><input id="co-name" type="text" placeholder="Your full name"/></div>
       <div class="cofield"><label>Phone</label><input id="co-phone" type="tel" placeholder="98XXXXXXXX"/></div>
     </div>
-    <div class="cofield"><label>Email <span style="color:var(--g3);font-weight:400">(optional, for order confirmation)</span></label><input id="co-email" type="email" placeholder="you@example.com"/></div>
     <div class="cofield"><label>Address</label><input id="co-address" type="text" placeholder="Tole, Ward, Municipality"/></div>
     <div class="co-row2">
       <div class="cofield"><label>City</label><input id="co-city" type="text" placeholder="Bhaktapur"/></div>
@@ -577,6 +576,8 @@ function openDetail(ri){
   for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';
   fh+='</div>';
   document.getElementById('dfeats').innerHTML=fh;
+  var warranty = p.brand === 'Anker' ? '18-month' : p.brand === 'UGreen' ? '2-year' : p.brand === 'Soundcore' ? '18-month' : 'Official';
+  document.getElementById('dwarranty').innerHTML = '🛡️ &nbsp; ' + warranty + ' warranty · Authorized White Fox Traders reseller';
   sessionStorage.setItem('lastProduct', ri);
   showPage('pg-detail');
   history.pushState({ri:ri},'','');
@@ -695,7 +696,6 @@ function selPay(m){
 function placeOrder(){
   var name = document.getElementById('co-name').value.trim();
   var phone = document.getElementById('co-phone').value.trim();
-  var email = document.getElementById('co-email').value.trim();
   var address = document.getElementById('co-address').value.trim();
   var city = document.getElementById('co-city').value.trim();
   var district = document.getElementById('co-district').value;
@@ -706,18 +706,12 @@ function placeOrder(){
     return;
   }
 
-  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    alert('Please enter a valid email address, or leave it blank.');
-    return;
-  }
-
   var total = 0;
   for(var i=0;i<cart.length;i++) total += cart[i].price * cart[i].qty;
 
   var orderData = {
     name: name,
     phone: phone,
-    email: email || null,
     address: address,
     city: city,
     district: district,
