@@ -91,6 +91,36 @@ tr:hover td{background:#fafafa}
 .save-btn:hover{opacity:0.8}
 .save-btn:disabled{opacity:0.4;cursor:default}
 .saved-flash{font-size:11px;color:#2d8a4e;display:none}
+
+/* ADD PRODUCT MODAL */
+.add-prod-btn{background:#0a0a0a;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
+.add-prod-btn:hover{opacity:0.85}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.on{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:32px}
+.modal-title{font-size:18px;font-weight:600;letter-spacing:-0.5px;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:#86868b;margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:0.5px solid #e8e8ed;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border 0.2s;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#0a0a0a}
+.form-group textarea{resize:vertical;min-height:80px;line-height:1.5}
+.form-section-label{font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:#86868b;margin:20px 0 10px}
+.spec-row,.feat-row,.img-row{display:grid;gap:8px;margin-bottom:8px;align-items:center}
+.spec-row{grid-template-columns:1fr 1fr auto}
+.feat-row,.img-row{grid-template-columns:1fr auto}
+.spec-row input,.feat-row input,.img-row input{margin-bottom:0;padding:8px 12px}
+.remove-btn{background:none;border:0.5px solid #e8e8ed;color:#86868b;font-size:16px;cursor:pointer;padding:4px 10px;border-radius:8px;line-height:1.4;font-family:'Inter',sans-serif}
+.remove-btn:hover{background:#fff0f0;border-color:#e30000;color:#e30000}
+.add-row-btn{background:#f5f5f7;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;margin-top:4px}
+.add-row-btn:hover{background:#e8e8ed}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:0.5px solid #e8e8ed}
+.cancel-btn{background:#f5f5f7;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
+.cancel-btn:hover{background:#e8e8ed}
+.submit-btn{background:#0a0a0a;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
+.submit-btn:hover{opacity:0.85}
+.submit-btn:disabled{opacity:0.4;cursor:default}
+.form-hint{font-size:11px;color:#86868b;margin-top:5px}
 </style>
 </head>
 <body>
@@ -153,7 +183,10 @@ tr:hover td{background:#fafafa}
     <div class="tab-section" id="tab-products">
       <div class="section-hd">
         <div class="section-title">Products</div>
-        <button class="refresh-btn" onclick="loadProducts()">↻ Refresh</button>
+        <div style="display:flex;gap:8px">
+          <button class="add-prod-btn" onclick="openAddModal()">+ Add Product</button>
+          <button class="refresh-btn" onclick="loadProducts()">↻ Refresh</button>
+        </div>
       </div>
       <input class="prod-search" type="text" placeholder="Search products..." oninput="filterProds(this.value)"/>
       <div class="prod-table-wrap">
@@ -164,6 +197,84 @@ tr:hover td{background:#fafafa}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <div class="modal-title">Add New Product</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="ap-name" placeholder="e.g. Anker PowerCore 10000"/>
+      </div>
+      <div class="form-group">
+        <label>Brand *</label>
+        <input type="text" id="ap-brand" placeholder="e.g. Anker"/>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="ap-cat">
+          <option value="">Select category</option>
+          <option value="earbuds">Earbuds</option>
+          <option value="headphones">Headphones</option>
+          <option value="speakers">Speakers</option>
+          <option value="cables">Cables</option>
+          <option value="chargers">Chargers</option>
+          <option value="powerbanks">Power Banks</option>
+          <option value="accessories">Accessories</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Price (Rs) *</label>
+        <input type="number" id="ap-price" placeholder="e.g. 4500" min="0"/>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Icon (emoji)</label>
+        <input type="text" id="ap-icon" placeholder="📦"/>
+        <div class="form-hint">Used if no images are uploaded</div>
+      </div>
+      <div class="form-group" style="display:flex;align-items:flex-end;gap:20px;padding-bottom:2px">
+        <div>
+          <label>In Stock</label>
+          <label class="toggle" style="margin-top:8px"><input type="checkbox" id="ap-stock" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div>
+          <label>New Arrival</label>
+          <label class="toggle" style="margin-top:8px"><input type="checkbox" id="ap-new"/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="ap-desc" placeholder="Short product description..."></textarea>
+    </div>
+
+    <div class="form-section-label">Images (Cloudinary URLs)</div>
+    <div id="ap-images-list"></div>
+    <button class="add-row-btn" onclick="addImageRow()">+ Add Image URL</button>
+
+    <div class="form-section-label">Specs</div>
+    <div id="ap-specs-list"></div>
+    <button class="add-row-btn" onclick="addSpecRow()">+ Add Spec</button>
+
+    <div class="form-section-label">Features</div>
+    <div id="ap-features-list"></div>
+    <button class="add-row-btn" onclick="addFeatureRow()">+ Add Feature</button>
+
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+      <button class="submit-btn" id="ap-submit" onclick="submitNewProduct()">Add Product</button>
+    </div>
   </div>
 </div>
 
@@ -367,6 +478,115 @@ function saveProduct(id, btn){
     } else { alert('Failed to save.'); }
   })
   .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
+/* ---- ADD PRODUCT ---- */
+function openAddModal(){
+  document.getElementById('add-modal').classList.add('on');
+  // seed one empty row each
+  document.getElementById('ap-images-list').innerHTML = '';
+  document.getElementById('ap-specs-list').innerHTML = '';
+  document.getElementById('ap-features-list').innerHTML = '';
+  addImageRow(); addSpecRow(); addFeatureRow();
+}
+
+function closeAddModal(){
+  document.getElementById('add-modal').classList.remove('on');
+  // reset form
+  ['ap-name','ap-brand','ap-price','ap-icon','ap-desc'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ap-cat').value='';
+  document.getElementById('ap-stock').checked=true;
+  document.getElementById('ap-new').checked=false;
+  document.getElementById('ap-images-list').innerHTML='';
+  document.getElementById('ap-specs-list').innerHTML='';
+  document.getElementById('ap-features-list').innerHTML='';
+  document.getElementById('ap-submit').disabled=false;
+  document.getElementById('ap-submit').textContent='Add Product';
+}
+
+function addImageRow(){
+  var div=document.createElement('div');
+  div.className='img-row';
+  div.innerHTML='<input type="text" placeholder="https://res.cloudinary.com/dubkl6agb/..."/><button class="remove-btn" onclick="this.parentElement.remove()">×</button>';
+  document.getElementById('ap-images-list').appendChild(div);
+}
+
+function addSpecRow(){
+  var div=document.createElement('div');
+  div.className='spec-row';
+  div.innerHTML='<input type="text" placeholder="Label (e.g. Battery Life)"/><input type="text" placeholder="Value (e.g. 8 hours)"/><button class="remove-btn" onclick="this.parentElement.remove()">×</button>';
+  document.getElementById('ap-specs-list').appendChild(div);
+}
+
+function addFeatureRow(){
+  var div=document.createElement('div');
+  div.className='feat-row';
+  div.innerHTML='<input type="text" placeholder="e.g. Active Noise Cancellation"/><button class="remove-btn" onclick="this.parentElement.remove()">×</button>';
+  document.getElementById('ap-features-list').appendChild(div);
+}
+
+function submitNewProduct(){
+  var name = document.getElementById('ap-name').value.trim();
+  var brand = document.getElementById('ap-brand').value.trim();
+  var cat = document.getElementById('ap-cat').value;
+  var price = parseInt(document.getElementById('ap-price').value);
+  var icon = document.getElementById('ap-icon').value.trim() || '📦';
+  var desc = document.getElementById('ap-desc').value.trim();
+  var inStock = document.getElementById('ap-stock').checked;
+  var isNew = document.getElementById('ap-new').checked;
+
+  if(!name || !brand || !cat || isNaN(price) || price < 0){
+    alert('Please fill in Name, Brand, Category and Price.');
+    return;
+  }
+
+  // collect images
+  var images = [];
+  document.querySelectorAll('#ap-images-list .img-row input').forEach(function(inp){
+    var v = inp.value.trim();
+    if(v) images.push(v);
+  });
+
+  // collect specs as object
+  var specs = {};
+  document.querySelectorAll('#ap-specs-list .spec-row').forEach(function(row){
+    var inputs = row.querySelectorAll('input');
+    var key = inputs[0].value.trim();
+    var val = inputs[1].value.trim();
+    if(key && val) specs[key] = val;
+  });
+
+  // collect features as array
+  var features = [];
+  document.querySelectorAll('#ap-features-list .feat-row input').forEach(function(inp){
+    var v = inp.value.trim();
+    if(v) features.push(v);
+  });
+
+  var btn = document.getElementById('ap-submit');
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+
+  fetch(API_URL+'/admin/products', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body: JSON.stringify({name:name, brand:brand, cat:cat, price:price, icon:icon, description:desc, in_stock:inStock, is_new:isNew, images:images, specs:specs, features:features})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.success){
+      closeAddModal();
+      allProducts = [];
+      loadProducts();
+    } else {
+      alert('Failed to add product. Please try again.');
+      btn.disabled=false;
+      btn.textContent='Add Product';
+    }
+  })
+  .catch(function(){
+    alert('Could not connect. Please try again.');
+    btn.disabled=false;
+    btn.textContent='Add Product';
+  });
 }
 </script>
 </body>
