@@ -90,6 +90,8 @@ tr:hover td{background:#fafafa}
 .save-btn{background:#0a0a0a;color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
 .save-btn:hover{opacity:0.8}
 .save-btn:disabled{opacity:0.4;cursor:default}
+.del-btn{background:none;border:0.5px solid #e8e8ed;color:#86868b;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;margin-left:6px}
+.del-btn:hover{background:#fff0f0;border-color:#e30000;color:#e30000}
 .saved-flash{font-size:11px;color:#2d8a4e;display:none}
 
 /* ADD PRODUCT MODAL */
@@ -191,8 +193,8 @@ tr:hover td{background:#fafafa}
       <input class="prod-search" type="text" placeholder="Search products..." oninput="filterProds(this.value)"/>
       <div class="prod-table-wrap">
         <table>
-          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>In Stock</th><th>New Arrival</th><th>Save</th></tr></thead>
-          <tbody id="products-tbody"><tr><td colspan="6" class="loading">Loading products...</td></tr></tbody>
+          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Delete</th></tr></thead>
+          <tbody id="products-tbody"><tr><td colspan="7" class="loading">Loading products...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -373,7 +375,7 @@ function updateOrderStatus(id, status){
 
 /* ---- PRODUCTS ---- */
 function loadProducts(){
-  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="6" class="loading">Loading products...</td></tr>';
+  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7" class="loading">Loading products...</td></tr>';
   fetch(API_URL+'/admin/products', {headers:{'Authorization':'Bearer '+authToken}})
   .then(function(r){ if(r.status===401){doLogout();return null;} return r.json(); })
   .then(function(data){
@@ -382,7 +384,7 @@ function loadProducts(){
     renderProducts(allProducts);
   })
   .catch(function(){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="6" class="empty">Could not load products.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7" class="empty">Could not load products.</td></tr>';
   });
 }
 
@@ -394,7 +396,7 @@ function filterProds(val){
 
 function renderProducts(list){
   if(!list.length){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="6" class="empty">No products found.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7" class="empty">No products found.</td></tr>';
     return;
   }
   var h='';
@@ -408,6 +410,7 @@ function renderProducts(list){
     h+='<td><label class="toggle"><input type="checkbox"'+(p.in_stock?' checked':'')+' id="stock-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.is_new?' checked':'')+' id="new-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><button class="save-btn" onclick="saveProduct('+p.id+',this)">Save</button><span class="saved-flash" id="flash-'+p.id+'">Saved ✓</span></td>';
+    h+='<td><button class="del-btn" onclick="deleteProduct('+p.id+',\''+p.name.replace(/'/g,'')+'\',this)">Delete</button></td>';
     h+='</tr>';
   }
   document.getElementById('products-tbody').innerHTML = h;
@@ -436,6 +439,34 @@ function saveProduct(id, btn){
     } else { alert('Failed to save.'); }
   })
   .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
+}
+
+/* ---- DELETE PRODUCT ---- */
+function deleteProduct(id, name, btn){
+  if(!confirm('Delete "' + name + '"?\n\nThis cannot be undone.')) return;
+  btn.disabled = true;
+  btn.textContent = '...';
+  fetch(API_URL+'/admin/products/'+id, {
+    method: 'DELETE',
+    headers: {'Authorization': 'Bearer '+authToken}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.success){
+      var row = document.getElementById('pr-'+id);
+      if(row) row.remove();
+      allProducts = allProducts.filter(function(p){ return p.id !== id; });
+    } else {
+      alert('Failed to delete product.');
+      btn.disabled = false;
+      btn.textContent = 'Delete';
+    }
+  })
+  .catch(function(){
+    alert('Could not connect.');
+    btn.disabled = false;
+    btn.textContent = 'Delete';
+  });
 }
 
 /* ---- ADD PRODUCT ---- */
