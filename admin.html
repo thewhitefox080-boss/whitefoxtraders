@@ -90,13 +90,17 @@ tr:hover td{background:#fafafa}
 .save-btn{background:#0a0a0a;color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
 .save-btn:hover{opacity:0.8}
 .save-btn:disabled{opacity:0.4;cursor:default}
-.del-btn{background:none;border:0.5px solid #e8e8ed;color:#86868b;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;margin-left:6px}
-.del-btn:hover{background:#fff0f0;border-color:#e30000;color:#e30000}
 .saved-flash{font-size:11px;color:#2d8a4e;display:none}
 
-/* ADD PRODUCT MODAL */
+/* PRODUCT ACTION BUTTONS */
 .add-prod-btn{background:#0a0a0a;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
 .add-prod-btn:hover{opacity:0.85}
+.edit-btn{background:none;border:0.5px solid #e8e8ed;color:#515154;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer}
+.edit-btn:hover{background:#f0f0f0;border-color:#0a0a0a;color:#0a0a0a}
+.del-btn{background:none;border:0.5px solid #e8e8ed;color:#86868b;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;margin-left:6px}
+.del-btn:hover{background:#fff0f0;border-color:#e30000;color:#e30000}
+
+/* MODALS SHARED */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.on{display:flex}
 .modal{background:#fff;border-radius:18px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:32px}
@@ -193,8 +197,8 @@ tr:hover td{background:#fafafa}
       <input class="prod-search" type="text" placeholder="Search products..." oninput="filterProds(this.value)"/>
       <div class="prod-table-wrap">
         <table>
-          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Delete</th></tr></thead>
-          <tbody id="products-tbody"><tr><td colspan="7" class="loading">Loading products...</td></tr></tbody>
+          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Edit</th><th>Delete</th></tr></thead>
+          <tbody id="products-tbody"><tr><td colspan="8" class="loading">Loading products...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -224,16 +228,52 @@ tr:hover td{background:#fafafa}
     <div class="form-group"><label>Description</label><textarea id="ap-desc" placeholder="Short product description..."></textarea></div>
     <div class="form-section-label">Images (Cloudinary URLs)</div>
     <div id="ap-images-list"></div>
-    <button class="add-row-btn" onclick="addImageRow()">+ Add Image URL</button>
+    <button class="add-row-btn" onclick="addImageRow('ap-images-list')">+ Add Image URL</button>
     <div class="form-section-label">Specs</div>
     <div id="ap-specs-list"></div>
-    <button class="add-row-btn" onclick="addSpecRow()">+ Add Spec</button>
+    <button class="add-row-btn" onclick="addSpecRow('ap-specs-list')">+ Add Spec</button>
     <div class="form-section-label">Features</div>
     <div id="ap-features-list"></div>
-    <button class="add-row-btn" onclick="addFeatureRow()">+ Add Feature</button>
+    <button class="add-row-btn" onclick="addFeatureRow('ap-features-list')">+ Add Feature</button>
     <div class="modal-footer">
       <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
       <button class="submit-btn" id="ap-submit" onclick="submitNewProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PRODUCT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-title">Edit Product</div>
+    <div class="form-row">
+      <div class="form-group"><label>Product Name *</label><input type="text" id="ep-name"/></div>
+      <div class="form-group"><label>Brand *</label><input type="text" id="ep-brand"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Category *</label><select id="ep-cat"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option></select></div>
+      <div class="form-group"><label>Price (Rs) *</label><input type="number" id="ep-price" min="0"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Icon (emoji)</label><input type="text" id="ep-icon"/><div class="form-hint">Used if no images are added</div></div>
+      <div class="form-group" style="display:flex;align-items:flex-end;gap:24px;padding-bottom:2px">
+        <div><label>In Stock</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ep-stock"/><span class="toggle-slider"></span></label></div>
+        <div><label>New Arrival</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ep-new"/><span class="toggle-slider"></span></label></div>
+      </div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="ep-desc"></textarea></div>
+    <div class="form-section-label">Images (Cloudinary URLs)</div>
+    <div id="ep-images-list"></div>
+    <button class="add-row-btn" onclick="addImageRow('ep-images-list')">+ Add Image URL</button>
+    <div class="form-section-label">Specs</div>
+    <div id="ep-specs-list"></div>
+    <button class="add-row-btn" onclick="addSpecRow('ep-specs-list')">+ Add Spec</button>
+    <div class="form-section-label">Features</div>
+    <div id="ep-features-list"></div>
+    <button class="add-row-btn" onclick="addFeatureRow('ep-features-list')">+ Add Feature</button>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+      <button class="submit-btn" id="ep-submit" onclick="submitEditProduct()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -375,7 +415,7 @@ function updateOrderStatus(id, status){
 
 /* ---- PRODUCTS ---- */
 function loadProducts(){
-  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7" class="loading">Loading products...</td></tr>';
+  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="8" class="loading">Loading products...</td></tr>';
   fetch(API_URL+'/admin/products', {headers:{'Authorization':'Bearer '+authToken}})
   .then(function(r){ if(r.status===401){doLogout();return null;} return r.json(); })
   .then(function(data){
@@ -384,7 +424,7 @@ function loadProducts(){
     renderProducts(allProducts);
   })
   .catch(function(){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7" class="empty">Could not load products.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="8" class="empty">Could not load products.</td></tr>';
   });
 }
 
@@ -396,7 +436,7 @@ function filterProds(val){
 
 function renderProducts(list){
   if(!list.length){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="7" class="empty">No products found.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="8" class="empty">No products found.</td></tr>';
     return;
   }
   var h='';
@@ -410,7 +450,8 @@ function renderProducts(list){
     h+='<td><label class="toggle"><input type="checkbox"'+(p.in_stock?' checked':'')+' id="stock-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.is_new?' checked':'')+' id="new-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><button class="save-btn" onclick="saveProduct('+p.id+',this)">Save</button><span class="saved-flash" id="flash-'+p.id+'">Saved ✓</span></td>';
-    h+='<td><button class="del-btn" onclick="deleteProduct('+p.id+',\''+p.name.replace(/'/g,'')+'\',this)">Delete</button></td>';
+    h+='<td><button class="edit-btn" onclick="openEditModal('+p.id+')">Edit</button></td>';
+    h+='<td><button class="del-btn" onclick="deleteProduct('+p.id+',this)">Delete</button></td>';
     h+='</tr>';
   }
   document.getElementById('products-tbody').innerHTML = h;
@@ -441,32 +482,30 @@ function saveProduct(id, btn){
   .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
 }
 
-/* ---- DELETE PRODUCT ---- */
-function deleteProduct(id, name, btn){
-  if(!confirm('Delete "' + name + '"?\n\nThis cannot be undone.')) return;
-  btn.disabled = true;
-  btn.textContent = '...';
-  fetch(API_URL+'/admin/products/'+id, {
-    method: 'DELETE',
-    headers: {'Authorization': 'Bearer '+authToken}
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if(data.success){
-      var row = document.getElementById('pr-'+id);
-      if(row) row.remove();
-      allProducts = allProducts.filter(function(p){ return p.id !== id; });
-    } else {
-      alert('Failed to delete product.');
-      btn.disabled = false;
-      btn.textContent = 'Delete';
-    }
-  })
-  .catch(function(){
-    alert('Could not connect.');
-    btn.disabled = false;
-    btn.textContent = 'Delete';
-  });
+/* ---- SHARED MODAL HELPERS ---- */
+function addImageRow(listId){
+  var div=document.createElement('div'); div.className='img-row';
+  div.innerHTML='<input type="text" placeholder="https://res.cloudinary.com/dubkl6agb/..."/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
+  document.getElementById(listId).appendChild(div);
+}
+function addSpecRow(listId){
+  var div=document.createElement('div'); div.className='spec-row';
+  div.innerHTML='<input type="text" placeholder="Label (e.g. Battery Life)"/><input type="text" placeholder="Value (e.g. 8 hours)"/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
+  document.getElementById(listId).appendChild(div);
+}
+function addFeatureRow(listId){
+  var div=document.createElement('div'); div.className='feat-row';
+  div.innerHTML='<input type="text" placeholder="e.g. Active Noise Cancellation"/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
+  document.getElementById(listId).appendChild(div);
+}
+function getImages(listId){
+  var imgs=[]; document.querySelectorAll('#'+listId+' .img-row input').forEach(function(inp){ var v=inp.value.trim(); if(v) imgs.push(v); }); return imgs;
+}
+function getSpecs(listId){
+  var specs={}; document.querySelectorAll('#'+listId+' .spec-row').forEach(function(row){ var ins=row.querySelectorAll('input'); var k=ins[0].value.trim(); var v=ins[1].value.trim(); if(k&&v) specs[k]=v; }); return specs;
+}
+function getFeatures(listId){
+  var feats=[]; document.querySelectorAll('#'+listId+' .feat-row input').forEach(function(inp){ var v=inp.value.trim(); if(v) feats.push(v); }); return feats;
 }
 
 /* ---- ADD PRODUCT ---- */
@@ -475,7 +514,7 @@ function openAddModal(){
   document.getElementById('ap-images-list').innerHTML='';
   document.getElementById('ap-specs-list').innerHTML='';
   document.getElementById('ap-features-list').innerHTML='';
-  addImageRow(); addSpecRow(); addFeatureRow();
+  addImageRow('ap-images-list'); addSpecRow('ap-specs-list'); addFeatureRow('ap-features-list');
 }
 function closeAddModal(){
   document.getElementById('add-modal').classList.remove('on');
@@ -489,53 +528,95 @@ function closeAddModal(){
   document.getElementById('ap-submit').disabled=false;
   document.getElementById('ap-submit').textContent='Add Product';
 }
-function addImageRow(){
-  var div=document.createElement('div');
-  div.className='img-row';
-  div.innerHTML='<input type="text" placeholder="https://res.cloudinary.com/dubkl6agb/..."/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
-  document.getElementById('ap-images-list').appendChild(div);
-}
-function addSpecRow(){
-  var div=document.createElement('div');
-  div.className='spec-row';
-  div.innerHTML='<input type="text" placeholder="Label (e.g. Battery Life)"/><input type="text" placeholder="Value (e.g. 8 hours)"/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
-  document.getElementById('ap-specs-list').appendChild(div);
-}
-function addFeatureRow(){
-  var div=document.createElement('div');
-  div.className='feat-row';
-  div.innerHTML='<input type="text" placeholder="e.g. Active Noise Cancellation"/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
-  document.getElementById('ap-features-list').appendChild(div);
-}
 function submitNewProduct(){
   var name=document.getElementById('ap-name').value.trim();
   var brand=document.getElementById('ap-brand').value.trim();
   var cat=document.getElementById('ap-cat').value;
   var price=parseInt(document.getElementById('ap-price').value);
-  var icon=document.getElementById('ap-icon').value.trim()||'box';
-  var desc=document.getElementById('ap-desc').value.trim();
-  var inStock=document.getElementById('ap-stock').checked;
-  var isNew=document.getElementById('ap-new').checked;
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
-  var images=[];
-  document.querySelectorAll('#ap-images-list .img-row input').forEach(function(inp){ var v=inp.value.trim(); if(v) images.push(v); });
-  var specs={};
-  document.querySelectorAll('#ap-specs-list .spec-row').forEach(function(row){ var inputs=row.querySelectorAll('input'); var k=inputs[0].value.trim(); var v=inputs[1].value.trim(); if(k&&v) specs[k]=v; });
-  var features=[];
-  document.querySelectorAll('#ap-features-list .feat-row input').forEach(function(inp){ var v=inp.value.trim(); if(v) features.push(v); });
-  var btn=document.getElementById('ap-submit');
-  btn.disabled=true; btn.textContent='Adding...';
+  var btn=document.getElementById('ap-submit'); btn.disabled=true; btn.textContent='Adding...';
   fetch(API_URL+'/admin/products',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:icon,description:desc,in_stock:inStock,is_new:isNew,images:images,specs:specs,features:features})
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list')})
   })
-  .then(function(r){ return r.json(); })
+  .then(function(r){return r.json();})
   .then(function(data){
     if(data.success){ closeAddModal(); allProducts=[]; loadProducts(); }
-    else { alert('Failed to add product.'); btn.disabled=false; btn.textContent='Add Product'; }
+    else{ alert('Failed to add product.'); btn.disabled=false; btn.textContent='Add Product'; }
   })
   .catch(function(){ alert('Could not connect.'); btn.disabled=false; btn.textContent='Add Product'; });
+}
+
+/* ---- EDIT PRODUCT ---- */
+var editingId = null;
+function openEditModal(id){
+  var p=null; for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ p=allProducts[i]; break; }
+  if(!p) return;
+  editingId=id;
+  document.getElementById('ep-name').value=p.name||'';
+  document.getElementById('ep-brand').value=p.brand||'';
+  document.getElementById('ep-cat').value=p.cat||'';
+  document.getElementById('ep-price').value=p.price||0;
+  document.getElementById('ep-icon').value=p.icon||'';
+  document.getElementById('ep-desc').value=p.description||'';
+  document.getElementById('ep-stock').checked=p.in_stock;
+  document.getElementById('ep-new').checked=p.is_new;
+  // populate images
+  var imgList=document.getElementById('ep-images-list'); imgList.innerHTML='';
+  var imgs=p.images||[];
+  if(imgs.length){ for(var j=0;j<imgs.length;j++){ addImageRow('ep-images-list'); imgList.querySelectorAll('.img-row input')[j].value=imgs[j]; } }
+  else addImageRow('ep-images-list');
+  // populate specs
+  var specList=document.getElementById('ep-specs-list'); specList.innerHTML='';
+  var specs=p.specs||{}; var skeys=Object.keys(specs);
+  if(skeys.length){ for(var k=0;k<skeys.length;k++){ addSpecRow('ep-specs-list'); var rows=specList.querySelectorAll('.spec-row'); var ins=rows[k].querySelectorAll('input'); ins[0].value=skeys[k]; ins[1].value=specs[skeys[k]]; } }
+  else addSpecRow('ep-specs-list');
+  // populate features
+  var featList=document.getElementById('ep-features-list'); featList.innerHTML='';
+  var feats=p.features||[];
+  if(feats.length){ for(var f=0;f<feats.length;f++){ addFeatureRow('ep-features-list'); featList.querySelectorAll('.feat-row input')[f].value=feats[f]; } }
+  else addFeatureRow('ep-features-list');
+  document.getElementById('ep-submit').disabled=false;
+  document.getElementById('ep-submit').textContent='Save Changes';
+  document.getElementById('edit-modal').classList.add('on');
+}
+function closeEditModal(){
+  document.getElementById('edit-modal').classList.remove('on');
+  editingId=null;
+}
+function submitEditProduct(){
+  var name=document.getElementById('ep-name').value.trim();
+  var brand=document.getElementById('ep-brand').value.trim();
+  var cat=document.getElementById('ep-cat').value;
+  var price=parseInt(document.getElementById('ep-price').value);
+  if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
+  var btn=document.getElementById('ep-submit'); btn.disabled=true; btn.textContent='Saving...';
+  fetch(API_URL+'/admin/products/'+editingId,{
+    method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list')})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.success){
+      for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===editingId){ allProducts[i]=data.product; break; }
+      closeEditModal(); loadProducts();
+    } else{ alert('Failed to save changes.'); btn.disabled=false; btn.textContent='Save Changes'; }
+  })
+  .catch(function(){ alert('Could not connect.'); btn.disabled=false; btn.textContent='Save Changes'; });
+}
+
+/* ---- DELETE PRODUCT ---- */
+function deleteProduct(id, btn){
+  var name=''; for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ name=allProducts[i].name; break; }
+  if(!confirm('Delete "'+name+'"?\n\nThis cannot be undone.')) return;
+  btn.disabled=true; btn.textContent='...';
+  fetch(API_URL+'/admin/products/'+id,{ method:'DELETE', headers:{'Authorization':'Bearer '+authToken} })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.success){ var row=document.getElementById('pr-'+id); if(row) row.remove(); allProducts=allProducts.filter(function(p){return p.id!==id;}); }
+    else{ alert('Failed to delete.'); btn.disabled=false; btn.textContent='Delete'; }
+  })
+  .catch(function(){ alert('Could not connect.'); btn.disabled=false; btn.textContent='Delete'; });
 }
 </script>
 </body>
