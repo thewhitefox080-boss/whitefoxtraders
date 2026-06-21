@@ -113,6 +113,12 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
 .dback:hover{color:var(--black)}
 .dlayout{display:grid;grid-template-columns:1fr 1fr;gap:56px;padding:0 56px;max-width:1060px;margin:0 auto}
 .dgallery{position:sticky;top:80px;height:fit-content}
+.dmain-wrap{position:relative}
+.img-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.92);border:0.5px solid #e8e8ed;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;z-index:10;transition:all 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.img-arrow:hover{background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.img-arrow.prev{left:8px}
+.img-arrow.next{right:8px}
+.img-arrow.hidden{display:none}
 .dmain{background:var(--g1);border-radius:var(--r);height:380px;display:flex;align-items:center;justify-content:center;font-size:90px;margin-bottom:10px;overflow:hidden;position:relative}
 .dmain img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px}
 .dthumbs{display:flex;gap:8px;flex-wrap:wrap}
@@ -322,19 +328,12 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <div class="spec-grid">
       <div class="spec-cell"><div class="spec-ico">✓</div><div class="spec-val">100%</div><div class="spec-lbl">Genuine products</div></div>
       <div class="spec-cell"><div class="spec-ico">📦</div><div class="spec-val">2–3</div><div class="spec-lbl">Day delivery</div></div>
-      <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val">Up to 2yr</div><div class="spec-lbl">Warranty</div></div>
+      <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val">2yr</div><div class="spec-lbl">Warranty</div></div>
       <div class="spec-cell"><div class="spec-ico">💳</div><div class="spec-val">82</div><div class="spec-lbl">Products in stock</div></div>
     </div>
   </div>
   <div class="cats" id="cats">
-    <button class="cat-btn on" onclick="setCat('all',this)">All</button>
-    <button class="cat-btn" onclick="setCat('earbuds',this)">Earbuds</button>
-    <button class="cat-btn" onclick="setCat('headphones',this)">Headphones</button>
-    <button class="cat-btn" onclick="setCat('speakers',this)">Speakers</button>
-    <button class="cat-btn" onclick="setCat('cables',this)">Cables</button>
-    <button class="cat-btn" onclick="setCat('chargers',this)">Chargers</button>
-    <button class="cat-btn" onclick="setCat('powerbanks',this)">Power banks</button>
-    <button class="cat-btn" onclick="setCat('accessories',this)">Accessories</button>
+    <button class="cat-btn on" id="cat-all" onclick="setCat('all',this)">All</button>
   </div>
   <div class="shop">
     <div class="sidebar">
@@ -394,7 +393,11 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <button class="dback" onclick="goHome()">← Back to products</button>
     <div class="dlayout">
       <div class="dgallery">
-        <div class="dmain" id="dmain"></div>
+        <div class="dmain-wrap">
+          <button class="img-arrow prev hidden" id="img-prev" onclick="navImg(-1)">&#8249;</button>
+          <div class="dmain" id="dmain"></div>
+          <button class="img-arrow next hidden" id="img-next" onclick="navImg(1)">&#8250;</button>
+        </div>
         <div class="dthumbs" id="dthumbs"></div>
       </div>
       <div class="dinfo">
@@ -409,7 +412,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
         </div>
         <div id="dspecs"></div>
         <div id="dfeats"></div>
-        <div id="dwarranty" class="dwarranty"></div>
+        <div class="dwarranty">🛡️ &nbsp; 2-year warranty · Authorized White Fox Traders reseller</div>
       </div>
     </div>
   </div>
@@ -556,17 +559,21 @@ function openDetail(ri){
   document.getElementById('dbtn').classList.remove('ok');
   var main=document.getElementById('dmain');
   var thumbs=document.getElementById('dthumbs');
+  curImg=0;
   if(p.images&&p.images.length){
-    main.innerHTML='<img src="'+p.images[0]+'" alt="'+p.name.replace(/"/g,'')+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px"/>';
+    setImg(0);
     var thArr=[];
     for(var i=0;i<p.images.length;i++){
       var tc=i===0?'dthumb on':'dthumb';
-      thArr.push('<div class="'+tc+'" onclick="swImg(this)"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');
+      thArr.push('<div class="'+tc+'" onclick="swImgIdx('+i+')"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');
     }
     thumbs.innerHTML=thArr.join('');
+    updateArrows();
   } else {
     main.innerHTML='<span style="font-size:90px">'+p.icon+'</span>';
     thumbs.innerHTML='<div class="dthumb on" style="font-size:26px">'+p.icon+'</div>';
+    document.getElementById('img-prev').classList.add('hidden');
+    document.getElementById('img-next').classList.add('hidden');
   }
   var sh='<div class="dspecs"><div class="dspecs-t">Specifications</div>';
   for(var k in p.specs) sh+='<div class="srow"><span class="skey">'+k+'</span><span class="sval">'+p.specs[k]+'</span></div>';
@@ -576,18 +583,34 @@ function openDetail(ri){
   for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';
   fh+='</div>';
   document.getElementById('dfeats').innerHTML=fh;
-  var warranty = p.brand === 'Anker' ? '18-month' : p.brand === 'UGreen' ? '2-year' : p.brand === 'Soundcore' ? '18-month' : 'Official';
-  document.getElementById('dwarranty').innerHTML = '🛡️ &nbsp; ' + warranty + ' warranty · Authorized White Fox Traders reseller';
   sessionStorage.setItem('lastProduct', ri);
   showPage('pg-detail');
   history.pushState({ri:ri},'','');
 }
 
-function swImg(el){
-  var src=el.querySelector('img').src;
-  document.getElementById('dmain').innerHTML='<img src="'+src+'" alt="product" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px"/>';
-  document.querySelectorAll('.dthumb').forEach(function(t){t.classList.remove('on');});
-  el.classList.add('on');
+var curImg=0;
+function setImg(idx){
+  var p=products[curP];
+  if(!p||!p.images||!p.images.length) return;
+  curImg=idx;
+  document.getElementById('dmain').innerHTML='<img src="'+p.images[idx]+'" alt="product" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px"/>';
+  var thumbs=document.querySelectorAll('.dthumb');
+  for(var i=0;i<thumbs.length;i++) thumbs[i].classList.toggle('on', i===idx);
+  updateArrows();
+}
+function swImgIdx(idx){ setImg(idx); }
+function navImg(dir){
+  var p=products[curP];
+  if(!p||!p.images) return;
+  var next=curImg+dir;
+  if(next<0||next>=p.images.length) return;
+  setImg(next);
+}
+function updateArrows(){
+  var p=products[curP];
+  var total=p&&p.images?p.images.length:0;
+  document.getElementById('img-prev').classList.toggle('hidden', curImg===0||total<=1);
+  document.getElementById('img-next').classList.toggle('hidden', curImg===total-1||total<=1);
 }
 
 function addFromDetail(){
@@ -612,6 +635,31 @@ function setBrand(b,btn){
   setTimeout(function(){document.querySelector('.shop').scrollIntoView({behavior:'smooth'});},100);
 }
 
+
+function buildCatButtons(){
+  var catLabels = {
+    earbuds:'Earbuds', headphones:'Headphones', speakers:'Speakers',
+    cables:'Cables', chargers:'Chargers', powerbanks:'Power banks',
+    accessories:'Accessories', projectors:'Projectors'
+  };
+  var seen = {};
+  for(var i=0;i<products.length;i++) seen[products[i].cat] = true;
+  var cats = document.getElementById('cats');
+  // remove old buttons except All
+  var btns = cats.querySelectorAll('.cat-btn:not(#cat-all)');
+  for(var j=0;j<btns.length;j++) btns[j].remove();
+  var keys = Object.keys(seen).sort();
+  for(var k=0;k<keys.length;k++){
+    var cat = keys[k];
+    var label = catLabels[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g,' '));
+    var btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.textContent = label;
+    btn.setAttribute('data-cat', cat);
+    btn.onclick = (function(c,b){ return function(){ setCat(c,b); }; })(cat, btn);
+    cats.appendChild(btn);
+  }
+}
 function setCat(c,btn){
   fCat=c;fPrice=null;
   document.querySelectorAll('.cat-btn').forEach(function(x){x.classList.remove('on');});
@@ -778,6 +826,7 @@ fetch(API_URL + '/products')
   .then(function(r){ return r.json(); })
   .then(function(data){
     products = data.map(mapProduct);
+    buildCatButtons();
     render();
     var _lp = sessionStorage.getItem('lastProduct');
     if(_lp !== null) {
