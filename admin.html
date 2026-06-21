@@ -215,7 +215,7 @@ tr:hover td{background:#fafafa}
       <div class="form-group"><label>Brand *</label><input type="text" id="ap-brand" placeholder="e.g. Anker"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Category *</label><select id="ap-cat"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option></select></div>
+      <div class="form-group"><label>Category *</label><select id="ap-cat" onchange="handleCatChange('ap-cat','ap-cat-custom')"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option><option value="projectors">Projectors</option><option value="__custom__">Custom...</option></select><input type="text" id="ap-cat-custom" placeholder="Type new category" style="display:none;margin-top:8px"/></div>
       <div class="form-group"><label>Price (Rs) *</label><input type="number" id="ap-price" placeholder="e.g. 4500" min="0"/></div>
     </div>
     <div class="form-row">
@@ -251,7 +251,7 @@ tr:hover td{background:#fafafa}
       <div class="form-group"><label>Brand *</label><input type="text" id="ep-brand"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Category *</label><select id="ep-cat"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option></select></div>
+      <div class="form-group"><label>Category *</label><select id="ep-cat" onchange="handleCatChange('ep-cat','ep-cat-custom')"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option><option value="projectors">Projectors</option><option value="__custom__">Custom...</option></select><input type="text" id="ep-cat-custom" placeholder="Type new category" style="display:none;margin-top:8px"/></div>
       <div class="form-group"><label>Price (Rs) *</label><input type="number" id="ep-price" min="0"/></div>
     </div>
     <div class="form-row">
@@ -482,6 +482,24 @@ function saveProduct(id, btn){
   .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
 }
 
+/* ---- CATEGORY HELPERS ---- */
+function handleCatChange(selId, customId){
+  var sel = document.getElementById(selId);
+  var custom = document.getElementById(customId);
+  if(sel.value === '__custom__'){
+    custom.style.display = 'block';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+  }
+}
+function getCategory(selId, customId){
+  var sel = document.getElementById(selId);
+  if(sel.value === '__custom__') return document.getElementById(customId).value.trim().toLowerCase().replace(/\s+/g,'-');
+  return sel.value;
+}
+
 /* ---- SHARED MODAL HELPERS ---- */
 function addImageRow(listId){
   var div=document.createElement('div'); div.className='img-row';
@@ -520,6 +538,8 @@ function closeAddModal(){
   document.getElementById('add-modal').classList.remove('on');
   ['ap-name','ap-brand','ap-price','ap-icon','ap-desc'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('ap-cat').value='';
+  document.getElementById('ap-cat-custom').style.display='none';
+  document.getElementById('ap-cat-custom').value='';
   document.getElementById('ap-stock').checked=true;
   document.getElementById('ap-new').checked=false;
   document.getElementById('ap-images-list').innerHTML='';
@@ -531,7 +551,7 @@ function closeAddModal(){
 function submitNewProduct(){
   var name=document.getElementById('ap-name').value.trim();
   var brand=document.getElementById('ap-brand').value.trim();
-  var cat=document.getElementById('ap-cat').value;
+  var cat=getCategory('ap-cat','ap-cat-custom');
   var price=parseInt(document.getElementById('ap-price').value);
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
   var btn=document.getElementById('ap-submit'); btn.disabled=true; btn.textContent='Adding...';
@@ -555,7 +575,18 @@ function openEditModal(id){
   editingId=id;
   document.getElementById('ep-name').value=p.name||'';
   document.getElementById('ep-brand').value=p.brand||'';
-  document.getElementById('ep-cat').value=p.cat||'';
+  var knownCats=['earbuds','headphones','speakers','cables','chargers','powerbanks','accessories','projectors'];
+  var epCatSel = document.getElementById('ep-cat');
+  var epCatCustom = document.getElementById('ep-cat-custom');
+  if(p.cat && knownCats.indexOf(p.cat) === -1){
+    epCatSel.value = '__custom__';
+    epCatCustom.style.display = 'block';
+    epCatCustom.value = p.cat;
+  } else {
+    epCatSel.value = p.cat||'';
+    epCatCustom.style.display = 'none';
+    epCatCustom.value = '';
+  }
   document.getElementById('ep-price').value=p.price||0;
   document.getElementById('ep-icon').value=p.icon||'';
   document.getElementById('ep-desc').value=p.description||'';
@@ -587,7 +618,7 @@ function closeEditModal(){
 function submitEditProduct(){
   var name=document.getElementById('ep-name').value.trim();
   var brand=document.getElementById('ep-brand').value.trim();
-  var cat=document.getElementById('ep-cat').value;
+  var cat=getCategory('ep-cat','ep-cat-custom');
   var price=parseInt(document.getElementById('ep-price').value);
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
   var btn=document.getElementById('ep-submit'); btn.disabled=true; btn.textContent='Saving...';
