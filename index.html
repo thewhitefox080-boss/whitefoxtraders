@@ -131,10 +131,11 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .prod-meta{font-size:13px;color:var(--g3)}
 .sort{background:var(--g1);border:none;border-radius:8px;padding:7px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(162px,1fr));gap:12px}
-.pcard{background:#fff;border:0.5px solid var(--g2);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform 0.2s,border-color 0.2s}
-.pcard:hover{transform:translateY(-3px);border-color:#c7c7cc}
+.pcard{background:#fff;border:0.5px solid var(--g2);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s cubic-bezier(0.22,1,0.36,1),border-color 0.3s}
+.pcard:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,0.10);border-color:#c7c7cc}
 .pcard-img{background:var(--g1);height:145px;display:flex;align-items:center;justify-content:center;font-size:50px;position:relative;overflow:hidden}
-.pcard-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12px}
+.pcard-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12px;transition:transform 0.4s cubic-bezier(0.22,1,0.36,1)}
+.pcard:hover .pcard-img img{transform:scale(1.06)}
 .pbadge{position:absolute;top:9px;left:9px;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:100px;color:#fff;z-index:1}
 .ba{background:#185FA5}.bs{background:#0F6E56}.bu{background:#3B6D11}
 .pinfo{padding:11px 13px 13px}
