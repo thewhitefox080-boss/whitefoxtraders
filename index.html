@@ -165,7 +165,11 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
 .fcol a:hover{color:#fff}
 .fbot{border-top:0.5px solid rgba(255,255,255,0.1);padding-top:18px;display:flex;justify-content:space-between}
 .fcp{font-size:12px;color:rgba(255,255,255,0.3)}
-/* DETAIL */
+/* DETAIL IMAGE ZOOM */
+.dgallery{position:sticky;top:80px;height:fit-content;position:relative}
+.zoom-panel{position:absolute;left:calc(100% + 16px);top:0;width:380px;height:380px;border-radius:var(--r);overflow:hidden;border:0.5px solid var(--g2);box-shadow:0 8px 32px rgba(0,0,0,0.12);background:var(--g1);display:none;pointer-events:none;z-index:50}
+.zoom-panel img{position:absolute;transform-origin:top left}
+.zoom-lens{position:absolute;border:1.5px solid rgba(0,0,0,0.15);border-radius:4px;background:rgba(255,255,255,0.15);pointer-events:none;display:none;z-index:10}
 .detail-wrap{padding-bottom:80px}
 .dback{display:flex;align-items:center;gap:8px;padding:18px 32px;font-size:14px;color:var(--g3);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif}
 .dback:hover{color:var(--black)}
@@ -407,10 +411,10 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <p class="sec-eye reveal">Why White Fox Traders</p>
     <h2 class="sec-h2 reveal reveal-delay-1">Built on trust.</h2>
     <div class="spec-grid reveal reveal-delay-2">
-      <div class="spec-cell"><div class="spec-ico">✓</div><div class="spec-val">100%</div><div class="spec-lbl">Genuine products</div></div>
-      <div class="spec-cell"><div class="spec-ico">📦</div><div class="spec-val">2–3</div><div class="spec-lbl">Day delivery</div></div>
-      <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val">2yr</div><div class="spec-lbl">Warranty</div></div>
-      <div class="spec-cell"><div class="spec-ico">💳</div><div class="spec-val">82</div><div class="spec-lbl">Products in stock</div></div>
+      <div class="spec-cell"><div class="spec-ico">✓</div><div class="spec-val" id="stat-genuine">100%</div><div class="spec-lbl">Genuine products</div></div>
+      <div class="spec-cell"><div class="spec-ico">📦</div><div class="spec-val" id="stat-delivery">2–3</div><div class="spec-lbl">Day delivery</div></div>
+      <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val" id="stat-warranty">2yr</div><div class="spec-lbl">Warranty</div></div>
+      <div class="spec-cell"><div class="spec-ico">💳</div><div class="spec-val" id="stat-products">82</div><div class="spec-lbl">Products in stock</div></div>
     </div>
   </div>
   <div class="cats" id="cats">
@@ -478,7 +482,9 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
           <button class="img-arrow prev hidden" id="img-prev" onclick="navImg(-1)">&#8249;</button>
           <div class="dmain" id="dmain"></div>
           <button class="img-arrow next hidden" id="img-next" onclick="navImg(1)">&#8250;</button>
+          <div class="zoom-lens" id="zoom-lens"></div>
         </div>
+        <div class="zoom-panel" id="zoom-panel"><img id="zoom-img" alt="zoom"/></div>
         <div class="dthumbs" id="dthumbs"></div>
       </div>
       <div class="dinfo">
@@ -679,6 +685,7 @@ function setImg(idx){
   var thumbs=document.querySelectorAll('.dthumb');
   for(var i=0;i<thumbs.length;i++) thumbs[i].classList.toggle('on', i===idx);
   updateArrows();
+  initZoom(p.images[idx]);
 }
 function swImgIdx(idx){ setImg(idx); }
 function navImg(dir){
@@ -904,6 +911,81 @@ function mapProduct(p) {
   };
 }
 
+// Stats Counter
+function animateCounter(el, target, suffix, duration){
+  var start = 0, startTime = null;
+  function step(timestamp){
+    if(!startTime) startTime = timestamp;
+    var progress = Math.min((timestamp - startTime) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(ease * target) + suffix;
+    if(progress < 1) requestAnimationFrame(step);
+    else el.textContent = target + suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+var statsAnimated = false;
+function initStatsCounter(){
+  if(statsAnimated) return;
+  var grid = document.querySelector('.spec-grid');
+  if(!grid) return;
+  var obs = new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting && !statsAnimated){
+      statsAnimated = true;
+      animateCounter(document.getElementById('stat-genuine'), 100, '%', 1200);
+      animateCounter(document.getElementById('stat-products'), 82, '', 1200);
+      setTimeout(function(){
+        document.getElementById('stat-delivery').textContent = '2–3';
+        document.getElementById('stat-warranty').textContent = '2yr';
+      }, 0);
+      obs.disconnect();
+    }
+  }, {threshold: 0.5});
+  obs.observe(grid);
+}
+
+// Product Image Zoom
+function initZoom(imgSrc){
+  var dmain = document.getElementById('dmain');
+  var lens = document.getElementById('zoom-lens');
+  var panel = document.getElementById('zoom-panel');
+  var zoomImg = document.getElementById('zoom-img');
+  if(!imgSrc){ panel.style.display='none'; lens.style.display='none'; return; }
+  zoomImg.src = imgSrc;
+  var zoomFactor = 2.5;
+  var lensW = 120, lensH = 120;
+  lens.style.width = lensW + 'px';
+  lens.style.height = lensH + 'px';
+
+  dmain.addEventListener('mouseenter', function(){
+    // Only show on desktop
+    if(window.innerWidth < 900) return;
+    panel.style.display = 'block';
+    lens.style.display = 'block';
+  });
+  dmain.addEventListener('mouseleave', function(){
+    panel.style.display = 'none';
+    lens.style.display = 'none';
+  });
+  dmain.addEventListener('mousemove', function(e){
+    if(window.innerWidth < 900) return;
+    var rect = dmain.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    var lx = Math.max(0, Math.min(x - lensW/2, rect.width - lensW));
+    var ly = Math.max(0, Math.min(y - lensH/2, rect.height - lensH));
+    lens.style.left = lx + 'px';
+    lens.style.top = ly + 'px';
+    var panelW = panel.offsetWidth;
+    var panelH = panel.offsetHeight;
+    zoomImg.style.width = (rect.width * zoomFactor) + 'px';
+    zoomImg.style.height = (rect.height * zoomFactor) + 'px';
+    zoomImg.style.left = -(lx * zoomFactor) + 'px';
+    zoomImg.style.top = -(ly * zoomFactor) + 'px';
+  });
+}
+
 // Navbar scroll effect
 window.addEventListener('scroll', function(){
   var nav = document.querySelector('nav');
@@ -933,6 +1015,7 @@ fetch(API_URL + '/products')
     buildCatButtons();
     render();
     initReveal();
+    initStatsCounter();
     var _lp = sessionStorage.getItem('lastProduct');
     if(_lp !== null) {
       openDetail(parseInt(_lp, 10));
