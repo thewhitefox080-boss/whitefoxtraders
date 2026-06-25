@@ -338,6 +338,19 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
 }
 
 /* =====================
+   HERO LOAD ANIMATION
+   ===================== */
+@keyframes heroFadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.hero-eye{animation:heroFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both}
+.hero-h1{animation:heroFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s both}
+.hero-sub{animation:heroFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.4s both}
+.hero-btns{animation:heroFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.52s both}
+.hero-brands{animation:heroFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.64s both}
+
+/* =====================
    SCROLL REVEAL
    ===================== */
 .reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s cubic-bezier(0.22,1,0.36,1),transform 0.7s cubic-bezier(0.22,1,0.36,1)}
@@ -374,14 +387,14 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
 <!-- HOME -->
 <div class="pg on" id="pg-home">
   <div class="hero">
-    <p class="hero-eye reveal">Authorized Reseller — Nepal</p>
-    <h1 class="hero-h1 reveal reveal-delay-1">Gear up.<br><span>Sound different.</span></h1>
-    <p class="hero-sub reveal reveal-delay-2">Genuine Anker, Soundcore & UGreen. Fast delivery across Nepal.</p>
-    <div class="hero-btns reveal reveal-delay-3">
+    <p class="hero-eye">Authorized Reseller — Nepal</p>
+    <h1 class="hero-h1">Gear up.<br><span>Sound different.</span></h1>
+    <p class="hero-sub">Genuine Anker, Soundcore & UGreen. Fast delivery across Nepal.</p>
+    <div class="hero-btns">
       <button class="btn-blk" onclick="document.querySelector('.shop').scrollIntoView({behavior:'smooth'})">Shop now</button>
       <button class="btn-lnk">Learn more</button>
     </div>
-    <div class="hero-brands reveal reveal-delay-4">
+    <div class="hero-brands">
       <div class="hbrand" onclick="setBrand('Anker')"><div class="hbrand-ico"><img src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/Logo_czcgdy.png" alt="Anker"/></div><div class="hbrand-name">Anker</div><div class="hbrand-ct">24 products</div></div>
       <div class="hbrand" onclick="setBrand('Soundcore')"><div class="hbrand-ico"><img src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idZmpzKg8k_logos_qnnnnh.png" alt="Soundcore"/></div><div class="hbrand-name">Soundcore</div><div class="hbrand-ct">23 products</div></div>
       <div class="hbrand" onclick="setBrand('UGreen')"><div class="hbrand-ico"><img src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idffTDyY1b_1782369678373_xp21hg.png" alt="UGreen"/></div><div class="hbrand-name">UGreen</div><div class="hbrand-ct">35 products</div></div>
