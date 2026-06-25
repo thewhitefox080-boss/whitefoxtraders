@@ -64,7 +64,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--black:#0a0a0a;--white:#fff;--g1:#f5f5f7;--g2:#e8e8ed;--g3:#86868b;--g4:#515154;--accent:#0071e3;--r:18px;--rs:10px}
 body{font-family:'Inter',sans-serif;background:var(--white);color:var(--black);font-size:14px;-webkit-font-smoothing:antialiased}
-nav{background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--g2);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+nav{background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--g2);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;transition:box-shadow 0.3s,background 0.3s}
+nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,0.08)}
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
 .nav-logo img{height:32px;width:auto;object-fit:contain}
 .nav-logo-name{font-size:15px;font-weight:600;color:var(--black);letter-spacing:-0.3px}
@@ -95,6 +96,7 @@ nav{background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border-bottom:0.
 .hbrand:hover{background:rgba(0,0,0,0.04)}
 .hbrand-ico{font-size:30px;height:36px;display:flex;align-items:center;justify-content:center}
 .hbrand-ico img{height:28px;width:auto;object-fit:contain}
+.hbrand-ico img.ugreen-logo{filter:invert(1) brightness(0)}
 .hbrand-name{font-size:10px;font-weight:500;color:var(--g3);letter-spacing:1px;text-transform:uppercase}
 .hbrand-ct{font-size:11px;color:var(--g3)}
 /* SPEC */
@@ -397,7 +399,7 @@ footer{background:#1d1d1f;padding:40px 32px 24px}
     <div class="hero-brands">
       <div class="hbrand" onclick="setBrand('Anker')"><div class="hbrand-ico"><img src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/Logo_czcgdy.png" alt="Anker"/></div><div class="hbrand-name">Anker</div><div class="hbrand-ct">24 products</div></div>
       <div class="hbrand" onclick="setBrand('Soundcore')"><div class="hbrand-ico"><img src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idZmpzKg8k_logos_qnnnnh.png" alt="Soundcore"/></div><div class="hbrand-name">Soundcore</div><div class="hbrand-ct">23 products</div></div>
-      <div class="hbrand" onclick="setBrand('UGreen')"><div class="hbrand-ico"><img src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idffTDyY1b_1782369678373_xp21hg.png" alt="UGreen"/></div><div class="hbrand-name">UGreen</div><div class="hbrand-ct">35 products</div></div>
+      <div class="hbrand" onclick="setBrand('UGreen')"><div class="hbrand-ico"><img class="ugreen-logo" src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idffTDyY1b_1782369678373_xp21hg.png" alt="UGreen"/></div><div class="hbrand-name">UGreen</div><div class="hbrand-ct">35 products</div></div>
     </div>
   </div>
   <div class="spec-sec">
@@ -900,6 +902,13 @@ function mapProduct(p) {
     isNew: p.is_new
   };
 }
+
+// Navbar scroll effect
+window.addEventListener('scroll', function(){
+  var nav = document.querySelector('nav');
+  if(window.scrollY > 10) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+});
 
 // Scroll Reveal
 var revealObserver = new IntersectionObserver(function(entries){
