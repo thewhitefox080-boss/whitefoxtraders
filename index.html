@@ -158,6 +158,20 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .pchip{padding:5px 14px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:12px;font-weight:700}
 .pe{color:#60BB46}.pf{color:#ff6b6b}
 
+/* SHOP BY BRAND */
+.brand-sec{padding:48px 48px 0}
+.brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.brand-card{border-radius:var(--r);overflow:hidden;cursor:pointer;padding:36px 32px;display:flex;flex-direction:column;justify-content:space-between;min-height:180px;position:relative;transition:transform 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s}
+.brand-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,0.15)}
+.brand-card-anker{background:linear-gradient(135deg,#185FA5 0%,#0d3d6e 100%)}
+.brand-card-soundcore{background:linear-gradient(135deg,#0F6E56 0%,#084d3b 100%)}
+.brand-card-ugreen{background:linear-gradient(135deg,#3B6D11 0%,#254a0a 100%)}
+.brand-card-logo{height:32px;width:auto;object-fit:contain;filter:invert(1) brightness(10);margin-bottom:auto}
+.brand-card-ugreen .brand-card-logo{filter:invert(1) brightness(10)}
+.brand-card-bottom{margin-top:24px}
+.brand-card-count{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:6px}
+.brand-card-cta{display:inline-flex;align-items:center;gap:6px;color:#fff;font-size:14px;font-weight:600}
+
 /* NEW ARRIVALS */
 .na-sec{padding:56px 48px 0}
 .sec-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px}
@@ -413,6 +427,9 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   .na-sec{padding:32px 16px 0}
   .na-card{flex:0 0 160px}
   .na-img{height:130px}
+  .brand-sec{padding:32px 16px 0}
+  .brand-grid{grid-template-columns:1fr;gap:12px}
+  .brand-card{min-height:120px;padding:24px 20px}
   /* CHECKOUT */
   .co-header{padding:0 16px}
   .co-layout{grid-template-columns:1fr;padding:0}
@@ -530,6 +547,36 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
       <a class="sec-viewall" onclick="setNewOnly()">View all →</a>
     </div>
     <div class="na-scroll" id="na-scroll"></div>
+  </div>
+
+  <!-- SHOP BY BRAND -->
+  <div class="brand-sec reveal">
+    <div class="sec-header">
+      <div class="sec-heading">Shop by Brand</div>
+    </div>
+    <div class="brand-grid">
+      <div class="brand-card brand-card-anker" onclick="setBrand('Anker')">
+        <img class="brand-card-logo" src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/Logo_czcgdy.png" alt="Anker"/>
+        <div class="brand-card-bottom">
+          <div class="brand-card-count">24 products</div>
+          <div class="brand-card-cta">Shop Anker →</div>
+        </div>
+      </div>
+      <div class="brand-card brand-card-soundcore" onclick="setBrand('Soundcore')">
+        <img class="brand-card-logo" src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idZmpzKg8k_logos_qnnnnh.png" alt="Soundcore"/>
+        <div class="brand-card-bottom">
+          <div class="brand-card-count">23 products</div>
+          <div class="brand-card-cta">Shop Soundcore →</div>
+        </div>
+      </div>
+      <div class="brand-card brand-card-ugreen" onclick="setBrand('UGreen')">
+        <img class="brand-card-logo" src="https://res.cloudinary.com/dubkl6agb/image/upload/v1782369738/idffTDyY1b_1782369678373_xp21hg.png" alt="UGreen"/>
+        <div class="brand-card-bottom">
+          <div class="brand-card-count">35 products</div>
+          <div class="brand-card-cta">Shop UGreen →</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="spec-sec">
