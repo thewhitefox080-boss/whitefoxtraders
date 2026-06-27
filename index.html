@@ -371,6 +371,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   /* PRODUCT DETAIL PAGE */
   .dback{padding:14px 16px;font-size:13px}
   .dlayout{grid-template-columns:1fr;gap:24px;padding:0 16px 32px;max-width:100%}
+  .dgallery{position:static}
   .dmain{height:280px;font-size:70px}
   .dthumb{width:56px;height:56px;font-size:22px}
   .dinfo{padding-top:0}
@@ -446,7 +447,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   <div class="nav-right">
     <div class="search-wrap">
       <span class="search-ico">🔍</span>
-      <input type="text" placeholder="Search..." oninput="setSearch(this.value)"/>
+      <input type="text" placeholder="Search..." oninput="setSearch(this.value)" onkeydown="if(event.key==='Enter'){setSearch(this.value);this.blur()}"/>
     </div>
     <button class="cart-pill" onclick="openCart()">🛍 Bag <span class="cbadge" id="cbadge">0</span></button>
   </div>
@@ -1039,7 +1040,7 @@ function setPrice(mn,mx,btn){
 }
 
 function setSort(v){fSort=v;render();}
-function setSearch(v){fSearch=v.toLowerCase();showPage('pg-home');render();}
+function setSearch(v){fSearch=v.toLowerCase();showPage('pg-home');render();setTimeout(function(){var shop=document.querySelector('.shop');if(shop)shop.scrollIntoView({behavior:'smooth',block:'start'});},100);}
 
 function addCart(ri,btn){
   var p=products[ri];
