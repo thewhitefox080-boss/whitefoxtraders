@@ -866,7 +866,48 @@ function filtered(){
   if(fBrand!=='all') d=d.filter(function(x){return x.brand===fBrand;});
   if(fCat!=='all') d=d.filter(function(x){return x.cat===fCat;});
   if(fPrice) d=d.filter(function(x){return x.price>=fPrice[0]&&x.price<=fPrice[1];});
-  if(fSearch) d=d.filter(function(x){return x.name.toLowerCase().indexOf(fSearch)>-1||x.brand.toLowerCase().indexOf(fSearch)>-1;});
+  // Smart search with synonyms and category matching
+  var synonyms = {
+    'charger':['chargers','charging','gan','usb-c charger','wall charger','fast charge','power adapter'],
+    'cable':['cables','cord','wire','usb','lightning','type-c','braided'],
+    'earphone':['earbuds','earbud','earphone','in-ear','tws','wireless earbuds'],
+    'earbuds':['earbuds','earbud','earphone','in-ear','tws'],
+    'headphone':['headphones','headphone','over-ear','on-ear','headset'],
+    'headset':['headphones','headphone','over-ear','on-ear'],
+    'speaker':['speakers','speaker','bluetooth speaker','soundbar'],
+    'powerbank':['power bank','powerbank','power banks','portable charger','portable battery'],
+    'power bank':['power bank','powerbank','portable charger'],
+    'hub':['hub','usb hub','docking','dock','usb-c hub'],
+    'projector':['projectors','projector'],
+    'accessory':['accessories','accessory','mount','grip','stand'],
+    'anker':['anker'],
+    'soundcore':['soundcore'],
+    'ugreen':['ugreen','u green']
+  };
+
+  if(fSearch){
+    var q = fSearch.trim();
+    // Build expanded search terms
+    var terms = [q];
+    if(synonyms[q]) terms = terms.concat(synonyms[q]);
+    // Also check each word in query
+    var words = q.split(/\s+/);
+    words.forEach(function(w){
+      if(synonyms[w]) terms = terms.concat(synonyms[w]);
+    });
+
+    d = d.filter(function(x){
+      var searchable = (x.name + ' ' + x.brand + ' ' + (x.cat||'')).toLowerCase();
+      // Check all expanded terms
+      for(var i=0;i<terms.length;i++){
+        if(searchable.indexOf(terms[i]) > -1) return true;
+      }
+      // Fuzzy: check if all words in query appear somewhere in searchable
+      var allMatch = words.every(function(w){ return searchable.indexOf(w) > -1; });
+      if(allMatch) return true;
+      return false;
+    });
+  }
   if(fSort==='asc') d.sort(function(a,b){return a.price-b.price;});
   else if(fSort==='desc') d.sort(function(a,b){return b.price-a.price;});
   else if(fSort==='az') d.sort(function(a,b){return a.name.localeCompare(b.name);});
