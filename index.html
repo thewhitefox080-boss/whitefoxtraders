@@ -158,6 +158,12 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .pchip{padding:5px 14px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:12px;font-weight:700}
 .pe{color:#60BB46}.pf{color:#ff6b6b}
 
+/* LOAD MORE */
+.load-more-wrap{text-align:center;padding:32px 0 8px}
+.load-more-info{font-size:12px;color:var(--g3);margin-bottom:14px}
+.load-more-btn{background:#fff;color:var(--black);border:1.5px solid var(--g2);padding:12px 36px;border-radius:100px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.load-more-btn:hover{border-color:var(--black);background:var(--g1)}
+
 /* FEATURED PRODUCTS */
 .feat-sec{padding:56px 48px 0}
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
@@ -640,6 +646,10 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
         </select>
       </div>
       <div class="grid" id="pgrid"></div>
+      <div class="load-more-wrap">
+        <div class="load-more-info" id="load-more-info"></div>
+        <button class="load-more-btn" id="load-more-btn" onclick="loadMore()">Load more</button>
+      </div>
     </div>
   </div>
   <div class="cta">
@@ -1048,14 +1058,17 @@ function filtered(){
   return d;
 }
 
+var visibleCount = 12;
+
 function render(){
   var d=filtered();
   var g=document.getElementById('pgrid');
   document.getElementById('pmeta').textContent=d.length+' products';
-  if(!d.length){g.innerHTML='<div class="nores">No products found.</div>';return;}
+  if(!d.length){g.innerHTML='<div class="nores">No products found.</div>';updateLoadMore(0,0);return;}
+  var shown = d.slice(0, visibleCount);
   var h='';
-  for(var i=0;i<d.length;i++){
-    var x=d[i];
+  for(var i=0;i<shown.length;i++){
+    var x=shown[i];
     var ri=products.indexOf(x);
     var bc=x.brand==='Anker'?'ba':x.brand==='Soundcore'?'bs':'bu';
     var img=x.images&&x.images.length?'<img src="'+x.images[0]+'" alt="'+x.name.replace(/"/g,'')+'"/>':'';
@@ -1067,6 +1080,25 @@ function render(){
     h+='<button class="padd" id="pa'+ri+'" onclick="event.stopPropagation();addCart('+ri+',this)">+</button></div></div></div>';
   }
   g.innerHTML=h;
+  updateLoadMore(shown.length, d.length);
+}
+
+function updateLoadMore(shown, total){
+  var btn = document.getElementById('load-more-btn');
+  var info = document.getElementById('load-more-info');
+  if(!btn) return;
+  if(shown >= total){
+    btn.style.display='none';
+    if(info) info.textContent = total > 0 ? 'Showing all '+total+' products' : '';
+  } else {
+    btn.style.display='inline-flex';
+    if(info) info.textContent = 'Showing '+shown+' of '+total+' products';
+  }
+}
+
+function loadMore(){
+  visibleCount += 12;
+  render();
 }
 
 function showPage(id){
@@ -1164,7 +1196,7 @@ function goHome(){
 }
 
 function setBrand(b,btn){
-  fBrand=b;fPrice=null;
+  fBrand=b;fPrice=null;visibleCount=12;
   document.querySelectorAll('.si').forEach(function(x){if(x.id&&x.id.indexOf('sb-')===0)x.classList.remove('on');});
   var el=btn||document.getElementById('sb-'+b)||document.getElementById('sb-all');
   if(el) el.classList.add('on');
@@ -1199,7 +1231,7 @@ function buildCatButtons(){
   }
 }
 function setCat(c,btn){
-  fCat=c;fPrice=null;
+  fCat=c;fPrice=null;visibleCount=12;
   document.querySelectorAll('.cat-btn').forEach(function(x){x.classList.remove('on');});
   if(btn) btn.classList.add('on');
   render();
@@ -1263,8 +1295,8 @@ function setNewOnly(){
   render();
 }
 
-function setSort(v){fSort=v;render();}
-function setSearch(v){fSearch=v.toLowerCase();showPage('pg-home');render();setTimeout(function(){var shop=document.querySelector('.shop');if(shop)shop.scrollIntoView({behavior:'smooth',block:'start'});},100);}
+function setSort(v){fSort=v;visibleCount=12;render();}
+function setSearch(v){fSearch=v.toLowerCase();visibleCount=12;showPage('pg-home');render();setTimeout(function(){var shop=document.querySelector('.shop');if(shop)shop.scrollIntoView({behavior:'smooth',block:'start'});},100);}
 
 function addCart(ri,btn){
   var p=products[ri];
