@@ -984,7 +984,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 <!-- CHECKOUT -->
 <div class="co-pg" id="co-pg">
   <div class="co-header">
-    <img class="logo co-header-logo" alt="WFT"/>
+    <img class="logo co-header-logo" alt="WFT" onclick="closeCheckout();showHome();" style="cursor:pointer"/>
     <div class="co-header-secure"><span>🔒</span><span>Secure checkout</span></div>
     <button class="co-back" onclick="closeCheckout()">← Back</button>
   </div>
@@ -1309,12 +1309,27 @@ function openCatPage(type){
   catState.price = null;
   catState.sort = 'def';
   catState.visible = 12;
+  catState.search = null;
+  // Clear search input
+  var si = document.querySelector('.search-wrap input');
+  if(si) si.value = '';
   renderCatPage();
   showPage('pg-cat');
 }
 
 function renderCatPage(){
   var cfg = catConfig[catState.type] || catConfig.all;
+
+  // If search mode, update banner to reflect search
+  if(catState.search){
+    document.getElementById('cat-banner').style.background = '#1d1d1f';
+    document.getElementById('cat-banner-eye').textContent = 'Search Results';
+    document.getElementById('cat-banner-title').textContent = '"' + catState.search + '"';
+    document.getElementById('cat-banner-sub').textContent = 'Showing all matching products';
+    document.getElementById('cat-sidebar-content').innerHTML = '';
+    renderCatGrid();
+    return;
+  }
 
   // Banner
   document.getElementById('cat-banner').style.background = cfg.color;
@@ -1334,11 +1349,25 @@ function renderCatPage(){
       sb += '<button class="cat-si'+active+'" onclick="catSetSub(\''+c+'\')">'+label+'</button>';
     });
   }
+  // Get available brands for this category
+  var activeCat = catState.subCat || catState.type;
+  var catProducts = products.slice();
+  if(activeCat === 'audio'){
+    catProducts = catProducts.filter(function(p){ return ['earbuds','headphones','speakers'].indexOf((p.cat||'').toLowerCase()) > -1; });
+  } else if(activeCat !== 'all'){
+    catProducts = catProducts.filter(function(p){ return (p.cat||'').toLowerCase() === activeCat.toLowerCase(); });
+  }
+  var availableBrands = [];
+  ['Anker','Soundcore','UGreen'].forEach(function(b){
+    if(catProducts.some(function(p){ return p.brand === b; })) availableBrands.push(b);
+  });
+
   sb += '<div class="cat-sidebar-title">Brand</div>';
-  ['all','Anker','Soundcore','UGreen'].forEach(function(b){
+  var allBrandActive = catState.brand === 'all' ? ' on' : '';
+  sb += '<button class="cat-si'+allBrandActive+'" onclick="catSetBrand(\'all\')">All Brands</button>';
+  availableBrands.forEach(function(b){
     var active = catState.brand === b ? ' on' : '';
-    var label = b === 'all' ? 'All Brands' : b;
-    sb += '<button class="cat-si'+active+'" onclick="catSetBrand(\''+b+'\')">'+label+'</button>';
+    sb += '<button class="cat-si'+active+'" onclick="catSetBrand(\''+b+'\')">'+b+'</button>';
   });
   sb += '<div class="cat-sidebar-title">Price</div>';
   var prices = [{l:'Under Rs 2,000',mn:0,mx:2000},{l:'Rs 2,000–5,000',mn:2000,mx:5000},{l:'Rs 5,000–10,000',mn:5000,mx:10000},{l:'Above Rs 10,000',mn:10000,mx:999999}];
@@ -1354,6 +1383,32 @@ function renderCatPage(){
 
 function catGetProducts(){
   var d = products.slice();
+  // Search filter
+  if(catState.search){
+    var q = catState.search;
+    var synonyms = {
+      'charger':['chargers','charging','gan','wall charger','fast charge'],
+      'cable':['cables','cord','usb','lightning','type-c','braided'],
+      'earphone':['earbuds','earbud','in-ear','tws'],
+      'earbuds':['earbuds','earbud','earphone','in-ear','tws'],
+      'headphone':['headphones','headphone','over-ear','headset'],
+      'speaker':['speakers','speaker','bluetooth speaker'],
+      'powerbank':['power bank','powerbank','portable charger'],
+      'power bank':['power bank','powerbank','portable charger'],
+      'hub':['hub','usb hub','docking','dock'],
+      'projector':['projectors','projector'],
+      'anker':['anker'],'soundcore':['soundcore'],'ugreen':['ugreen']
+    };
+    var words = q.split(/\s+/);
+    var terms = [q];
+    words.forEach(function(w){ if(synonyms[w]) terms=terms.concat(synonyms[w]); });
+    d = d.filter(function(x){
+      var s=(x.name+' '+x.brand+' '+(x.cat||'')).toLowerCase();
+      for(var i=0;i<terms.length;i++) if(s.indexOf(terms[i])>-1) return true;
+      return words.every(function(w){ return s.indexOf(w)>-1; });
+    });
+    return d;
+  }
   // Filter by type/subcat
   var activeCat = catState.subCat || catState.type;
   if(activeCat === 'audio'){
@@ -1377,7 +1432,7 @@ function renderCatGrid(){
   var d = catGetProducts();
   var shown = d.slice(0, catState.visible);
   var cfg = catConfig[catState.type] || catConfig.all;
-  var title = catState.subCat ? (catState.subCat.charAt(0).toUpperCase()+catState.subCat.slice(1)) : cfg.title;
+  var title = catState.search ? 'Search: "'+catState.search+'"' : (catState.subCat ? (catState.subCat.charAt(0).toUpperCase()+catState.subCat.slice(1)) : cfg.title);
   document.getElementById('cat-main-title').textContent = title;
   document.getElementById('cat-main-meta').textContent = d.length + ' products';
   var h = '';
@@ -1610,7 +1665,15 @@ function setNewOnly(){
 }
 
 function setSort(v){fSort=v;visibleCount=12;render();}
-function setSearch(v){fSearch=v.toLowerCase();visibleCount=12;showPage('pg-home');render();setTimeout(function(){var shop=document.querySelector('.shop');if(shop)shop.scrollIntoView({behavior:'smooth',block:'start'});},100);}
+function setSearch(v){
+  var q = v.toLowerCase().trim();
+  if(!q){ return; }
+  catState.type='all'; catState.subCat=null; catState.brand='all';
+  catState.price=null; catState.sort='def'; catState.visible=12;
+  catState.search=q;
+  renderCatPage();
+  showPage('pg-cat');
+}
 
 function addCart(ri,btn){
   var p=products[ri];
