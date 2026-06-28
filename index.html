@@ -581,8 +581,10 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     </li>
     <li><a onclick="openCatPage('chargers')">Chargers</a></li>
     <li><a onclick="openCatPage('cables')">Cables</a></li>
+    <li><a onclick="openCatPage('powerbanks')">Power Banks</a></li>
+    <li><a onclick="openCatPage('projectors')">Projectors</a></li>
     <li><a onclick="openCatPage('accessories')">Accessories</a></li>
-    <li><a onclick="openCatPage('all')">All Products</a></li>
+    <li><a onclick="openCatPage('all')">All</a></li>
   </ul>
   <div class="nav-right">
     <div class="search-wrap">
@@ -629,9 +631,9 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 
   <!-- BUILT ON TRUST -->
   <div class="spec-sec">
-    <p class="sec-eye reveal">Why White Fox Traders</p>
-    <h2 class="sec-h2 reveal reveal-delay-1">Built on trust.</h2>
-    <div class="spec-grid reveal reveal-delay-2">
+    <p class="sec-eye">Why White Fox Traders</p>
+    <h2 class="sec-h2">Built on trust.</h2>
+    <div class="spec-grid">
       <div class="spec-cell"><div class="spec-ico">✓</div><div class="spec-val" id="stat-genuine">100%</div><div class="spec-lbl">Genuine products</div></div>
       <div class="spec-cell"><div class="spec-ico">📦</div><div class="spec-val" id="stat-delivery">2–3</div><div class="spec-lbl">Day delivery</div></div>
       <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val" id="stat-warranty">2yr</div><div class="spec-lbl">Warranty</div></div>
@@ -934,6 +936,8 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
         <a onclick="openCatPage('audio')">Audio</a>
         <a onclick="openCatPage('chargers')">Chargers</a>
         <a onclick="openCatPage('cables')">Cables</a>
+        <a onclick="openCatPage('powerbanks')">Power Banks</a>
+        <a onclick="openCatPage('projectors')">Projectors</a>
         <a onclick="openCatPage('accessories')">Accessories</a>
         <a onclick="openCatPage('all')">All Products</a>
       </div>
@@ -1300,6 +1304,8 @@ var catConfig = {
   speakers:    { title:'Speakers',      eye:'Audio',             sub:'Bluetooth and portable speakers.', color:'#0F6E56', cats:['earbuds','headphones','speakers'] },
   chargers:    { title:'Chargers',      eye:'Power & Energy',    sub:'GaN chargers, fast charging and more.', color:'#185FA5', cats:null },
   cables:      { title:'Cables',        eye:'Connectivity',      sub:'USB-C, Lightning, and braided cables.', color:'#3B3B3B', cats:null },
+  powerbanks:  { title:'Power Banks',   eye:'Portable Power',    sub:'Carry power wherever you go.', color:'#185FA5', cats:null },
+  projectors:  { title:'Projectors',    eye:'Home & Office',     sub:'Portable and smart projectors.', color:'#1d1d1f', cats:null },
   accessories: { title:'Accessories',   eye:'Accessories',       sub:'Hubs, grips, mounts and more.', color:'#3B6D11', cats:null }
 };
 
@@ -1582,8 +1588,11 @@ function renderFeatured(){
 }
 
 function renderNewArrivals(){
-  var newProducts = products.filter(function(p){ return p.isNew; }).slice(0,10);
-  if(!newProducts.length) return;
+  var newProducts = products.filter(function(p){ return p.isNew; });
+  // Fallback: if no products marked as new, show last 10 by id
+  if(!newProducts.length) newProducts = products.slice().sort(function(a,b){ return b.id-a.id; }).slice(0,10);
+  newProducts = newProducts.slice(0,10);
+  if(!newProducts.length){ document.querySelector('.na-sec') && (document.querySelector('.na-sec').style.display='none'); return; }
   var html = '';
   newProducts.forEach(function(p){
     var img = p.images&&p.images.length ? '<img src="'+p.images[0]+'" alt="'+p.name+'"/>' : '<span style="font-size:40px">'+p.icon+'</span>';
@@ -1896,26 +1905,6 @@ function animateCounter(el, target, suffix, duration){
     else el.textContent = target + suffix;
   }
   requestAnimationFrame(step);
-}
-
-var statsAnimated = false;
-function initStatsCounter(){
-  if(statsAnimated) return;
-  var grid = document.querySelector('.spec-grid');
-  if(!grid) return;
-  var obs = new IntersectionObserver(function(entries){
-    if(entries[0].isIntersecting && !statsAnimated){
-      statsAnimated = true;
-      animateCounter(document.getElementById('stat-genuine'), 100, '%', 1200);
-      animateCounter(document.getElementById('stat-products'), 82, '', 1200);
-      setTimeout(function(){
-        document.getElementById('stat-delivery').textContent = '2–3';
-        document.getElementById('stat-warranty').textContent = '2yr';
-      }, 0);
-      obs.disconnect();
-    }
-  }, {threshold: 0.5});
-  obs.observe(grid);
 }
 
 // Mobile zoom overlay
