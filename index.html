@@ -566,7 +566,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 <body>
 
 <nav>
-  <div class="nav-logo" onclick="goHome()">
+  <div class="nav-logo" onclick="showHome()">
     <img class="logo" alt="White Fox Traders"/>
     <span class="nav-logo-name">White Fox Traders</span>
   </div>
@@ -1165,16 +1165,6 @@ function restoreFilterState(){
   if(!savedState) return;
   fBrand=savedState.fBrand; fCat=savedState.fCat;
   fPrice=savedState.fPrice; fSort=savedState.fSort; fSearch=savedState.fSearch;
-  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('on');});
-  document.querySelectorAll('.cat-btn').forEach(function(b){
-    var oc=b.getAttribute('onclick')||'';
-    if((fCat==='all'&&oc.indexOf("'all'")>-1)||(fCat!=='all'&&oc.indexOf("'"+fCat+"'")>-1)) b.classList.add('on');
-  });
-  document.querySelectorAll('.si').forEach(function(b){b.classList.remove('on');});
-  var bId=document.getElementById('sb-'+(fBrand==='all'?'all':fBrand));
-  if(bId) bId.classList.add('on');
-  var si=document.querySelector('.search-wrap input');
-  if(si) si.value=fSearch||'';
 }
 
 function fmt(n){return 'Rs '+n.toLocaleString();}
@@ -1280,8 +1270,11 @@ function showPage(id){
   document.getElementById('pg-cat').classList.remove('on');
   if(id === 'pg-cat'){
     document.getElementById('pg-cat').classList.add('on');
+    sessionStorage.setItem('currentPage','cat');
+    sessionStorage.setItem('catState', JSON.stringify(catState));
   } else {
     document.getElementById(id).classList.add('on');
+    if(id === 'pg-home') sessionStorage.removeItem('currentPage');
   }
   window.scrollTo(0,0);
 }
@@ -1508,8 +1501,6 @@ function goHome(){
     showPage('pg-cat');
     window.scrollTo(0,0);
   } else {
-    restoreFilterState();
-    render();
     showHome();
   }
 }
@@ -1946,16 +1937,20 @@ fetch(API_URL + '/products')
   .then(function(r){ return r.json(); })
   .then(function(data){
     products = data.map(mapProduct);
-    buildCatButtons();
-    render();
-    initReveal();
-    initStatsCounter();
     renderNewArrivals();
     renderFeatured();
+    initReveal();
     initStatsCounter();
-    var _lp = sessionStorage.getItem('lastProduct');
-    if(_lp !== null) {
-      openDetail(parseInt(_lp, 10));
+    // Restore page on refresh
+    var savedPage = sessionStorage.getItem('currentPage');
+    var savedCat = sessionStorage.getItem('catState');
+    if(savedPage === 'cat' && savedCat){
+      try{ catState = JSON.parse(savedCat); }catch(e){}
+      renderCatPage();
+      showPage('pg-cat');
+    } else {
+      var _lp = sessionStorage.getItem('lastProduct');
+      if(_lp !== null){ openDetail(parseInt(_lp, 10)); }
     }
   })
   .catch(function(){
