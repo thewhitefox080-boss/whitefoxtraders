@@ -861,7 +861,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 <!-- DETAIL -->
 <div class="pg" id="pg-detail">
   <div class="detail-wrap">
-    <button class="dback" onclick="goHome()">← Back</button>
+    <button class="dback" onclick="navBack()">← Back</button>
     <div class="dlayout">
       <div class="dgallery">
         <div class="dmain-wrap">
@@ -1556,7 +1556,6 @@ function catLoadMore(){ catState.visible+=12; renderCatGrid(); }
 
 function showHome(){
   showPage('pg-home');
-  navPush({type:'home'});
   setTimeout(initReveal, 50);
 }
 
@@ -1642,12 +1641,7 @@ var prevPage = 'home'; // track where user came from
 
 function goHome(){
   sessionStorage.removeItem('lastProduct');
-  if(prevPage === 'cat'){
-    showPage('pg-cat');
-    window.scrollTo(0,0);
-  } else {
-    showHome();
-  }
+  navBack();
 }
 function setBrand(b){
   catState.type = 'all';
@@ -1918,9 +1912,20 @@ function navPush(state){
   history.pushState({idx: navStack.length-1}, '', '');
 }
 
+// Site back button — go to previous in stack
+function navBack(){
+  if(navStack.length > 1){
+    navStack.pop();
+    history.back(); // triggers popstate which restores previous state
+  } else {
+    showHome();
+  }
+}
+
 window.addEventListener('popstate', function(e){
   var idx = e.state && e.state.idx !== undefined ? e.state.idx : 0;
-  navStack = navStack.slice(0, idx+1);
+  // Truncate stack to this point
+  if(idx < navStack.length - 1) navStack = navStack.slice(0, idx+1);
   var state = navStack[idx] || {type:'home'};
   if(state.type === 'home'){
     document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
@@ -1929,16 +1934,30 @@ window.addEventListener('popstate', function(e){
     sessionStorage.removeItem('currentPage');
     setTimeout(initReveal, 50);
   } else if(state.type === 'cat'){
-    if(state.catState) catState = state.catState;
+    if(state.catState) catState = JSON.parse(JSON.stringify(state.catState));
     renderCatPage();
     document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
     document.getElementById('pg-cat').classList.add('on');
   } else if(state.type === 'detail'){
-    // Restore product detail without pushing new history
     var ri = state.ri;
     var p = products[ri];
     if(p){
       curP = ri;
+      // Re-render detail page content
+      var badge=document.getElementById('dbadge');
+      badge.textContent=p.brand; badge.style.background=bColors[p.brand]||'#333';
+      document.getElementById('dname').textContent=p.name;
+      document.getElementById('dprice').textContent=fmt(p.price);
+      document.getElementById('ddesc').textContent=p.desc;
+      document.getElementById('dbtn').textContent='Add to bag';
+      document.getElementById('dbtn').classList.remove('ok');
+      curImg=0;
+      if(p.images&&p.images.length){ setImg(0); var thArr=[];for(var i=0;i<p.images.length;i++){var tc=i===0?'dthumb on':'dthumb';thArr.push('<div class="'+tc+'" onclick="swImgIdx('+i+')"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');}document.getElementById('dthumbs').innerHTML=thArr.join('');updateArrows();}
+      else{document.getElementById('dmain').innerHTML='<span style="font-size:90px">'+p.icon+'</span>';document.getElementById('dthumbs').innerHTML='<div class="dthumb on" style="font-size:26px">'+p.icon+'</div>';document.getElementById('img-prev').classList.add('hidden');document.getElementById('img-next').classList.add('hidden');}
+      var sh='<div class="dspecs"><div class="dspecs-t">Specifications</div>';for(var k in p.specs) sh+='<div class="srow"><span class="skey">'+k+'</span><span class="sval">'+p.specs[k]+'</span></div>';sh+='</div>';
+      document.getElementById('dspecs').innerHTML=sh;
+      var fh='<div class="dfeats"><div class="dfeats-t">Key Features</div>';for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';fh+='</div>';
+      document.getElementById('dfeats').innerHTML=fh;
       document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
       document.getElementById('pg-cat').classList.remove('on');
       document.getElementById('pg-detail').classList.add('on');
