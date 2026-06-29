@@ -1361,39 +1361,12 @@ function showPage(id){
     document.getElementById('pg-cat').classList.add('on');
     sessionStorage.setItem('currentPage','cat');
     sessionStorage.setItem('catState', JSON.stringify(catState));
-    history.pushState({page:'cat'}, '', '');
-  } else if(id === 'pg-detail'){
-    document.getElementById(id).classList.add('on');
-    history.pushState({page:'detail', ri: curP}, '', '');
   } else {
     document.getElementById(id).classList.add('on');
-    if(id === 'pg-home'){
-      sessionStorage.removeItem('currentPage');
-      history.pushState({page:'home'}, '', '');
-    }
+    if(id === 'pg-home') sessionStorage.removeItem('currentPage');
   }
   window.scrollTo(0,0);
 }
-
-// Handle browser back/forward button
-window.addEventListener('popstate', function(e){
-  var state = e.state;
-  if(!state || state.page === 'home'){
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('pg-cat').classList.remove('on');
-    document.getElementById('pg-home').classList.add('on');
-    sessionStorage.removeItem('currentPage');
-    setTimeout(initReveal, 50);
-  } else if(state.page === 'cat'){
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('pg-cat').classList.add('on');
-  } else if(state.page === 'detail' && state.ri !== undefined){
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('pg-cat').classList.remove('on');
-    document.getElementById('pg-detail').classList.add('on');
-  }
-  window.scrollTo(0,0);
-});
 
 // CATEGORY PAGE STATE
 var catState = {
@@ -1426,11 +1399,11 @@ function openCatPage(type){
   catState.sort = 'def';
   catState.visible = 12;
   catState.search = null;
-  // Clear search input
   var si = document.querySelector('.search-wrap input');
   if(si) si.value = '';
   renderCatPage();
   showPage('pg-cat');
+  navPush({type:'cat', catState: JSON.parse(JSON.stringify(catState))});
 }
 
 function renderCatPage(){
@@ -1583,11 +1556,11 @@ function catLoadMore(){ catState.visible+=12; renderCatGrid(); }
 
 function showHome(){
   showPage('pg-home');
+  navPush({type:'home'});
   setTimeout(initReveal, 50);
 }
 
 function openDetail(ri){
-  // Track where we came from
   prevPage = document.getElementById('pg-cat').classList.contains('on') ? 'cat' : 'home';
   saveFilterState();
   var p=products[ri];
@@ -1630,7 +1603,7 @@ function openDetail(ri){
   sessionStorage.setItem('lastProduct', ri);
   showPage('pg-detail');
   renderRelated(ri);
-  history.pushState({ri:ri},'','');
+  navPush({type:'detail', ri:ri});
 }
 
 var curImg=0;
@@ -1676,7 +1649,6 @@ function goHome(){
     showHome();
   }
 }
-
 function setBrand(b){
   catState.type = 'all';
   catState.subCat = null;
@@ -1686,6 +1658,7 @@ function setBrand(b){
   catState.visible = 12;
   renderCatPage();
   showPage('pg-cat');
+  navPush({type:'cat', catState: JSON.parse(JSON.stringify(catState))});
 }
 
 
@@ -1789,7 +1762,6 @@ function setSort(v){fSort=v;visibleCount=12;render();}
 function setSearch(v){
   var q = v.toLowerCase().trim();
   if(!q){
-    // Clear search — go back to homepage
     catState.search = null;
     showHome();
     return;
@@ -1799,6 +1771,7 @@ function setSearch(v){
   catState.search=q;
   renderCatPage();
   showPage('pg-cat');
+  navPush({type:'cat', catState: JSON.parse(JSON.stringify(catState))});
 }
 
 function addCart(ri,btn){
@@ -1936,17 +1909,44 @@ function resetAll(){
   goHome();
 }
 
-// Handle browser back button
-window.addEventListener('popstate', function(){
-  sessionStorage.removeItem('lastProduct');
-  restoreFilterState();
-  render();
-  showPage('pg-home');
+// Navigation stack for browser back button
+var navStack = [{type:'home'}];
+history.replaceState({idx:0}, '', '');
+
+function navPush(state){
+  navStack.push(state);
+  history.pushState({idx: navStack.length-1}, '', '');
+}
+
+window.addEventListener('popstate', function(e){
+  var idx = e.state && e.state.idx !== undefined ? e.state.idx : 0;
+  navStack = navStack.slice(0, idx+1);
+  var state = navStack[idx] || {type:'home'};
+  if(state.type === 'home'){
+    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('pg-cat').classList.remove('on');
+    document.getElementById('pg-home').classList.add('on');
+    sessionStorage.removeItem('currentPage');
+    setTimeout(initReveal, 50);
+  } else if(state.type === 'cat'){
+    if(state.catState) catState = state.catState;
+    renderCatPage();
+    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('pg-cat').classList.add('on');
+  } else if(state.type === 'detail'){
+    // Restore product detail without pushing new history
+    var ri = state.ri;
+    var p = products[ri];
+    if(p){
+      curP = ri;
+      document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+      document.getElementById('pg-cat').classList.remove('on');
+      document.getElementById('pg-detail').classList.add('on');
+      renderRelated(ri);
+    }
+  }
   window.scrollTo(0,0);
 });
-
-// Init
-history.replaceState({home:true},'','');
 
 function mapProduct(p) {
   var cat = p.cat || '';
