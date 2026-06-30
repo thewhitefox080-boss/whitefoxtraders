@@ -235,6 +235,9 @@ tr:hover td{background:#fafafa}
     <div class="form-section-label">Features</div>
     <div id="ap-features-list"></div>
     <button class="add-row-btn" onclick="addFeatureRow('ap-features-list')">+ Add Feature</button>
+    <div class="form-section-label">Color Variants <span style="font-size:11px;color:#86868b;font-weight:400">(optional — for products with multiple colors)</span></div>
+    <div id="ap-variants-list"></div>
+    <button class="add-row-btn" onclick="addVariantRow('ap-variants-list')">+ Add Color Variant</button>
     <div class="modal-footer">
       <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
       <button class="submit-btn" id="ap-submit" onclick="submitNewProduct()">Add Product</button>
@@ -271,6 +274,9 @@ tr:hover td{background:#fafafa}
     <div class="form-section-label">Features</div>
     <div id="ep-features-list"></div>
     <button class="add-row-btn" onclick="addFeatureRow('ep-features-list')">+ Add Feature</button>
+    <div class="form-section-label">Color Variants <span style="font-size:11px;color:#86868b;font-weight:400">(optional — for products with multiple colors)</span></div>
+    <div id="ep-variants-list"></div>
+    <button class="add-row-btn" onclick="addVariantRow('ep-variants-list')">+ Add Color Variant</button>
     <div class="modal-footer">
       <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
       <button class="submit-btn" id="ep-submit" onclick="submitEditProduct()">Save Changes</button>
@@ -532,6 +538,7 @@ function openAddModal(){
   document.getElementById('ap-images-list').innerHTML='';
   document.getElementById('ap-specs-list').innerHTML='';
   document.getElementById('ap-features-list').innerHTML='';
+  document.getElementById('ap-variants-list').innerHTML='';
   addImageRow('ap-images-list'); addSpecRow('ap-specs-list'); addFeatureRow('ap-features-list');
 }
 function closeAddModal(){
@@ -548,6 +555,66 @@ function closeAddModal(){
   document.getElementById('ap-submit').disabled=false;
   document.getElementById('ap-submit').textContent='Add Product';
 }
+/* ---- VARIANTS ---- */
+function addVariantRow(listId){
+  var list = document.getElementById(listId);
+  var div = document.createElement('div');
+  div.className = 'variant-row';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:start';
+  div.innerHTML = '<div><input type="text" placeholder="Color name (e.g. Black)" style="width:100%"/></div>'
+    + '<div><input type="text" placeholder="Image URL (Cloudinary)" style="width:100%"/><button class="add-row-btn" style="margin-top:4px;font-size:11px" onclick="addVariantImageField(this)">+ Add image</button></div>'
+    + '<button onclick="this.closest(\'.variant-row\').remove()" style="background:#fff;border:1px solid #e8e8ed;border-radius:8px;padding:6px 10px;cursor:pointer;color:#86868b;height:36px">✕</button>';
+  list.appendChild(div);
+}
+
+function addVariantImageField(btn){
+  var imgDiv = btn.parentElement;
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Image URL (Cloudinary)';
+  input.style.cssText = 'width:100%;margin-top:4px';
+  imgDiv.insertBefore(input, btn);
+}
+
+function getVariants(listId){
+  var variants = [];
+  document.querySelectorAll('#'+listId+' .variant-row').forEach(function(row){
+    var inputs = row.querySelectorAll('input');
+    var color = inputs[0].value.trim();
+    if(!color) return;
+    var images = [];
+    for(var i=1;i<inputs.length;i++){
+      var url = inputs[i].value.trim();
+      if(url) images.push(url);
+    }
+    variants.push({color: color, images: images});
+  });
+  return variants;
+}
+
+function populateVariants(listId, variants){
+  var list = document.getElementById(listId);
+  list.innerHTML = '';
+  if(!variants || !variants.length) return;
+  variants.forEach(function(v){
+    var div = document.createElement('div');
+    div.className = 'variant-row';
+    div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:start';
+    var imgInputs = '';
+    if(v.images && v.images.length){
+      v.images.forEach(function(url){
+        imgInputs += '<input type="text" placeholder="Image URL" style="width:100%;margin-top:4px" value="'+url+'"/>';
+      });
+    } else {
+      imgInputs = '<input type="text" placeholder="Image URL (Cloudinary)" style="width:100%"/>';
+    }
+    div.innerHTML = '<div><input type="text" placeholder="Color name (e.g. Black)" style="width:100%" value="'+(v.color||'')+'"/></div>'
+      + '<div>'+imgInputs+'<button class="add-row-btn" style="margin-top:4px;font-size:11px" onclick="addVariantImageField(this)">+ Add image</button></div>'
+      + '<button onclick="this.closest(\'.variant-row\').remove()" style="background:#fff;border:1px solid #e8e8ed;border-radius:8px;padding:6px 10px;cursor:pointer;color:#86868b;height:36px">✕</button>';
+    list.appendChild(div);
+  });
+}
+
 function submitNewProduct(){
   var name=document.getElementById('ap-name').value.trim();
   var brand=document.getElementById('ap-brand').value.trim();
@@ -557,7 +624,7 @@ function submitNewProduct(){
   var btn=document.getElementById('ap-submit'); btn.disabled=true; btn.textContent='Adding...';
   fetch(API_URL+'/admin/products',{
     method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list')})
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list'),variants:getVariants('ap-variants-list')})
   })
   .then(function(r){return r.json();})
   .then(function(data){
@@ -607,6 +674,8 @@ function openEditModal(id){
   var feats=p.features||[];
   if(feats.length){ for(var f=0;f<feats.length;f++){ addFeatureRow('ep-features-list'); featList.querySelectorAll('.feat-row input')[f].value=feats[f]; } }
   else addFeatureRow('ep-features-list');
+  // populate variants
+  populateVariants('ep-variants-list', p.variants||[]);
   document.getElementById('ep-submit').disabled=false;
   document.getElementById('ep-submit').textContent='Save Changes';
   document.getElementById('edit-modal').classList.add('on');
@@ -624,7 +693,7 @@ function submitEditProduct(){
   var btn=document.getElementById('ep-submit'); btn.disabled=true; btn.textContent='Saving...';
   fetch(API_URL+'/admin/products/'+editingId,{
     method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list')})
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list'),variants:getVariants('ep-variants-list')})
   })
   .then(function(r){return r.json();})
   .then(function(data){
