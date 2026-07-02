@@ -201,20 +201,10 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 /* HERO BANNER SLIDER */
 .hbs{position:relative;width:100%;min-height:100vh;overflow:hidden;background:#000}
 .hbs-track{display:flex;height:100%;transition:transform 0.7s cubic-bezier(0.22,1,0.36,1)}
-.hbs-slide{flex:0 0 100%;min-height:100vh;position:relative;display:flex;align-items:center;overflow:hidden}
+.hbs-slide{flex:0 0 100%;min-height:100vh;position:relative;overflow:hidden}
+.hbs-slide.hbs-clickable{cursor:pointer}
 .hbs-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 8s ease}
 .hbs-slide.active .hbs-bg{transform:scale(1.05)}
-.hbs-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.6) 0%,rgba(0,0,0,0.1) 60%,transparent 100%)}
-.hbs-content{position:relative;z-index:2;padding:0 80px;max-width:600px}
-.hbs-eye{font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:16px;opacity:0;transform:translateY(20px);transition:all 0.6s 0.1s}
-.hbs-slide.active .hbs-eye{opacity:1;transform:translateY(0)}
-.hbs-title{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1.05;color:#fff;margin-bottom:16px;opacity:0;transform:translateY(24px);transition:all 0.6s 0.25s}
-.hbs-slide.active .hbs-title{opacity:1;transform:translateY(0)}
-.hbs-sub{font-size:17px;font-weight:300;color:rgba(255,255,255,0.75);margin-bottom:32px;opacity:0;transform:translateY(20px);transition:all 0.6s 0.4s}
-.hbs-slide.active .hbs-sub{opacity:1;transform:translateY(0)}
-.hbs-btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#000;border:none;padding:14px 28px;border-radius:100px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;opacity:0;transform:translateY(16px);transition:all 0.6s 0.5s,opacity 0.2s,background 0.2s}
-.hbs-slide.active .hbs-btn{opacity:1;transform:translateY(0)}
-.hbs-btn:hover{background:var(--g2)}
 .hbs-dots{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
 .hbs-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:all 0.3s}
 .hbs-dot.on{width:20px;border-radius:3px;background:#fff}
@@ -544,9 +534,6 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   /* CART PANEL */
   .cart-pan{width:100%;right:0;left:0;top:auto;bottom:0;height:88vh;border-radius:20px 20px 0 0}
 
-  .hbs-content{padding:0 24px;max-width:100%}
-  .hbs-title{font-size:32px;letter-spacing:-1px}
-  .hbs-sub{font-size:14px}
   .hbs-arrow{display:none}
   .na-sec{padding:32px 16px 0}
   .na-scroll{grid-template-columns:repeat(2,1fr);gap:10px}
@@ -712,45 +699,24 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   <div class="hbs" id="hbs">
     <div class="hbs-track" id="hbs-track">
 
-      <!-- SLIDE 1 — ANKER -->
-      <div class="hbs-slide active" id="hbs-slide-0">
-        <div class="hbs-bg" id="hbs-bg-0" style="background-color:#0d3d6e;background-image:url('ANKER_BANNER_URL')"></div>
-        <div class="hbs-overlay"></div>
-        <div class="hbs-content">
-          <div class="hbs-eye">Authorized Reseller — Nepal</div>
-          <div class="hbs-title">Power up.<br/>Live charged.</div>
-          <div class="hbs-sub">Discover the full Anker lineup. Chargers, cables, power banks and more.</div>
-          <button class="hbs-btn" onclick="setBrand('Anker')">Shop Anker →</button>
-        </div>
+      <!-- SLIDE 1 -->
+      <div class="hbs-slide active hbs-clickable" id="hbs-slide-0" onclick="hbsSlideClick(0)">
+        <div class="hbs-bg" id="hbs-bg-0" style="background-color:#0d3d6e;background-image:url('BANNER_1_URL')"></div>
       </div>
 
-      <!-- SLIDE 2 — SOUNDCORE -->
-      <div class="hbs-slide" id="hbs-slide-1">
-        <div class="hbs-bg" id="hbs-bg-1" style="background-color:#084d3b;background-image:url('SOUNDCORE_BANNER_URL')"></div>
-        <div class="hbs-overlay"></div>
-        <div class="hbs-content">
-          <div class="hbs-eye">Premium Audio — Nepal</div>
-          <div class="hbs-title">Hear every<br/>detail.</div>
-          <div class="hbs-sub">Soundcore earbuds and headphones. Immersive sound, all day comfort.</div>
-          <button class="hbs-btn" onclick="setBrand('Soundcore')">Shop Soundcore →</button>
-        </div>
+      <!-- SLIDE 2 -->
+      <div class="hbs-slide" id="hbs-slide-1" onclick="hbsSlideClick(1)">
+        <div class="hbs-bg" id="hbs-bg-1" style="background-color:#084d3b;background-image:url('BANNER_2_URL')"></div>
       </div>
 
-      <!-- SLIDE 3 — UGREEN -->
-      <div class="hbs-slide" id="hbs-slide-2">
-        <div class="hbs-bg" id="hbs-bg-2" style="background-color:#254a0a;background-image:url('UGREEN_BANNER_URL')"></div>
-        <div class="hbs-overlay"></div>
-        <div class="hbs-content">
-          <div class="hbs-eye">Connectivity — Nepal</div>
-          <div class="hbs-title">Connect<br/>everything.</div>
-          <div class="hbs-sub">UGreen hubs, cables and accessories. Built for every device.</div>
-          <button class="hbs-btn" onclick="setBrand('UGreen')">Shop UGreen →</button>
-        </div>
+      <!-- SLIDE 3 -->
+      <div class="hbs-slide" id="hbs-slide-2" onclick="hbsSlideClick(2)">
+        <div class="hbs-bg" id="hbs-bg-2" style="background-color:#254a0a;background-image:url('BANNER_3_URL')"></div>
       </div>
 
     </div>
-    <button class="hbs-arrow hbs-prev" onclick="hbsNav(-1)">&#8249;</button>
-    <button class="hbs-arrow hbs-next" onclick="hbsNav(1)">&#8250;</button>
+    <button class="hbs-arrow hbs-prev" onclick="event.stopPropagation();hbsNav(-1)">&#8249;</button>
+    <button class="hbs-arrow hbs-next" onclick="event.stopPropagation();hbsNav(1)">&#8250;</button>
     <div class="hbs-dots">
       <div class="hbs-dot on" onclick="hbsGo(0)"></div>
       <div class="hbs-dot" onclick="hbsGo(1)"></div>
@@ -1588,33 +1554,54 @@ function selectVariant(idx){
   if(!p || !p.variants || !p.variants[idx]) return;
   curVariantIdx = idx;
   renderVariants(p, idx);
-  var variant = p.variants[idx];
-  if(variant.images && variant.images.length){
-    // Swap main gallery to variant images
-    var thumbs = document.getElementById('dthumbs');
-    curImg = 0;
-    var thArr = [];
-    for(var i=0;i<variant.images.length;i++){
-      var tc = i===0 ? 'dthumb on' : 'dthumb';
-      thArr.push('<div class="'+tc+'" onclick="swImgIdxVariant('+i+')"><img src="'+variant.images[i]+'" alt="v'+i+'"/></div>');
+
+  // Build combined gallery: base images + all variant images
+  var allImages = (p.images||[]).slice();
+  var variantStartIdx = {};
+  p.variants.forEach(function(v, vi){
+    if(v.images && v.images.length){
+      variantStartIdx[vi] = allImages.length;
+      allImages = allImages.concat(v.images);
     }
-    thumbs.innerHTML = thArr.join('');
-    document.getElementById('dmain').innerHTML = '<img src="'+variant.images[0]+'" alt="product" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px;cursor:zoom-in" onclick="if(window.innerWidth<900)openZoomOverlay(\''+variant.images[0]+'\')" />';
-    initZoom(variant.images[0]);
-    updateArrows();
+  });
+
+  // Rebuild thumbs with all images
+  var thumbsEl = document.getElementById('dthumbs');
+  var thArr = [];
+  for(var i=0;i<allImages.length;i++){
+    var src = allImages[i];
+    thArr.push('<div class="dthumb" onclick="setImgFromAll('+i+')"><img src="'+src+'" alt="img'+i+'"/></div>');
   }
+  thumbsEl.innerHTML = thArr.join('');
+
+  // Jump to this variant's first image
+  var jumpIdx = variantStartIdx[idx] !== undefined ? variantStartIdx[idx] : 0;
+  var jumpSrc = allImages[jumpIdx];
+  document.querySelectorAll('.dthumb').forEach(function(t,i){ t.classList.toggle('on', i===jumpIdx); });
+  document.getElementById('dmain').innerHTML = '<img src="'+jumpSrc+'" alt="product" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px;cursor:zoom-in" onclick="if(window.innerWidth<900)openZoomOverlay(this.src)" />';
+  initZoom(jumpSrc);
+  curImg = jumpIdx;
+  var activeThumb = document.querySelectorAll('.dthumb')[jumpIdx];
+  if(activeThumb) activeThumb.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+}
+
+// allImages is built at call time — store for thumb clicks
+var _currentAllImages = [];
+function setImgFromAll(idx){
+  // Rebuild allImages from current product + variants
+  var p = products[curP];
+  var allImages = (p.images||[]).slice();
+  if(p.variants) p.variants.forEach(function(v){ if(v.images) allImages = allImages.concat(v.images); });
+  var src = allImages[idx];
+  if(!src) return;
+  curImg = idx;
+  document.getElementById('dmain').innerHTML = '<img src="'+src+'" alt="product" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px;cursor:zoom-in" onclick="if(window.innerWidth<900)openZoomOverlay(this.src)" />';
+  document.querySelectorAll('.dthumb').forEach(function(t,i){ t.classList.toggle('on', i===idx); });
+  initZoom(src);
 }
 
 function swImgIdxVariant(idx){
-  var p = products[curP];
-  if(!p || curVariantIdx < 0 || !p.variants[curVariantIdx]) return;
-  var images = p.variants[curVariantIdx].images;
-  if(!images || !images[idx]) return;
-  curImg = idx;
-  document.getElementById('dmain').innerHTML = '<img src="'+images[idx]+'" alt="product" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:20px;cursor:zoom-in" onclick="if(window.innerWidth<900)openZoomOverlay(\''+images[idx]+'\')" />';
-  var thumbs = document.querySelectorAll('.dthumb');
-  for(var i=0;i<thumbs.length;i++) thumbs[i].classList.toggle('on', i===idx);
-  initZoom(images[idx]);
+  setImgFromAll(idx);
 }
 
 function showHome(){
@@ -2201,6 +2188,20 @@ function closeMobileMenu(){ document.getElementById('mobile-menu').classList.rem
 var hbsCur = 0;
 var hbsTotal = 3;
 var hbsTimer = null;
+
+// EDIT THIS: set click destination for each banner slide (index 0,1,2)
+// Use null for a pure image banner with no click action
+// Use a function to navigate, e.g. function(){ openCatPage('chargers'); }
+var hbsLinks = [
+  null, // Slide 1 — no click action
+  null, // Slide 2 — no click action
+  null  // Slide 3 — no click action
+];
+
+function hbsSlideClick(idx){
+  var action = hbsLinks[idx];
+  if(typeof action === 'function') action();
+}
 
 function hbsGo(idx){
   document.getElementById('hbs-slide-'+hbsCur).classList.remove('active');
