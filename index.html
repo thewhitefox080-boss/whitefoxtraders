@@ -700,17 +700,17 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 
       <!-- SLIDE 1 -->
       <div class="hbs-slide active hbs-clickable" id="hbs-slide-0" onclick="hbsSlideClick(0)">
-        <div class="hbs-bg" id="hbs-bg-0" style="background-color:#0d3d6e;background-image:url('https://res.cloudinary.com/dubkl6agb/image/upload/w_1920,h_800,c_pad,b_auto/v1783059325/Gemini_Generated_Image_m0zwaem0zwaem0zw_1_-_Edited_bmip9c.png')"></div>
+        <div class="hbs-bg" id="hbs-bg-0" style="background-color:#1d1d1f;background-image:url('https://res.cloudinary.com/dubkl6agb/image/upload/v1783139312/1_wlewdq.png')"></div>
       </div>
 
       <!-- SLIDE 2 -->
       <div class="hbs-slide" id="hbs-slide-1" onclick="hbsSlideClick(1)">
-        <div class="hbs-bg" id="hbs-bg-1" style="background-color:#084d3b;background-image:url('https://res.cloudinary.com/dubkl6agb/image/upload/w_1920,h_800,c_pad,b_auto/v1783059326/ChatGPT_Image_Jul_3_2026_11_57_56_AM_gjqtnm.png')"></div>
+        <div class="hbs-bg" id="hbs-bg-1" style="background-color:#185FA5;background-image:url('https://res.cloudinary.com/dubkl6agb/image/upload/v1783139310/2_qpkc7z.png')"></div>
       </div>
 
       <!-- SLIDE 3 -->
       <div class="hbs-slide" id="hbs-slide-2" onclick="hbsSlideClick(2)">
-        <div class="hbs-bg" id="hbs-bg-2" style="background-color:#254a0a;background-image:url('https://res.cloudinary.com/dubkl6agb/image/upload/w_1920,h_800,c_pad,b_auto/v1783059326/BASSUP_TECHNOLOGY_pwrgnx.png')"></div>
+        <div class="hbs-bg" id="hbs-bg-2" style="background-color:#0F6E56;background-image:url('https://res.cloudinary.com/dubkl6agb/image/upload/v1783139312/3_svc97q.png')"></div>
       </div>
 
     </div>
@@ -2189,12 +2189,10 @@ var hbsTotal = 3;
 var hbsTimer = null;
 
 // EDIT THIS: set click destination for each banner slide (index 0,1,2)
-// Use null for a pure image banner with no click action
-// Use a function to navigate, e.g. function(){ openCatPage('chargers'); }
 var hbsLinks = [
-  null, // Slide 1 — no click action
-  null, // Slide 2 — no click action
-  null  // Slide 3 — no click action
+  function(){ var p=products.find(function(x){ return x.name.toLowerCase().indexOf('nebula mars 3 air')>-1; }); if(p) openDetail(products.indexOf(p)); else openCatPage('projectors'); },
+  function(){ openCatPage('chargers'); },
+  function(){ var p=products.find(function(x){ return x.name.toLowerCase().indexOf('boom 3')>-1||x.name.toLowerCase().indexOf('boom3')>-1; }); if(p) openDetail(products.indexOf(p)); else openCatPage('audio'); }
 ];
 
 function hbsSlideClick(idx){
