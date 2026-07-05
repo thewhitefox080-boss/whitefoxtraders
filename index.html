@@ -201,6 +201,8 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 /* SCROLL HIJACK */
 .snap-spacer{height:300vh;display:none}
 .snap-spacer.on{display:block}
+.snap-overlay{display:none;position:fixed;inset:0;background:var(--white);z-index:0;top:84px}
+.snap-overlay.on{display:block}
 .snap-indicator{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:10;opacity:0.6}
 .snap-indicator span{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g3)}
 .snap-arrow{width:20px;height:20px;border-right:2px solid var(--g3);border-bottom:2px solid var(--g3);transform:rotate(45deg);animation:snapBounce 1.2s ease-in-out infinite}
@@ -681,6 +683,9 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     <span class="ticker-item">Cash on Delivery Available</span><span class="ticker-dot"></span>
   </div>
 </div>
+
+<!-- SNAP OVERLAY -->
+<div class="snap-overlay" id="snap-overlay"></div>
 
 <!-- HOME -->
 <div class="pg on" id="pg-home">
@@ -2233,6 +2238,11 @@ function snapGoTo(idx){
   if(!cur || !next){ snapAnimating = false; return; }
   snapAnimating = true;
 
+  // Set z-index so next appears above current
+  cur.style.zIndex = '3';
+  next.style.zIndex = '4';
+  next.style.visibility = 'visible';
+
   // Fade + drift current section up and out
   cur.style.transition = 'transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
   cur.style.transform = 'translateY(-60px)';
@@ -2272,6 +2282,7 @@ function snapRelease(){
   if(snapDone) return;
   snapDone = true;
   document.body.style.overflow = '';
+  document.getElementById('snap-overlay').classList.remove('on');
   window.removeEventListener('wheel', snapWheelHandler);
   window.removeEventListener('keydown', snapKeyHandler);
   document.removeEventListener('touchstart', snapTouchStart);
@@ -2354,10 +2365,11 @@ function initSnap(){
     s.style.right = '0';
     s.style.width = '100%';
     s.style.height = 'calc(100vh - 84px)';
-    s.style.zIndex = i === 0 ? '2' : '1';
+    s.style.zIndex = i === 0 ? '4' : '3';
     s.style.pointerEvents = i === 0 ? '' : 'none';
   });
   document.body.style.overflow = 'hidden';
+  document.getElementById('snap-overlay').classList.add('on');
   window.addEventListener('wheel', snapWheelHandler, {passive: false});
   window.addEventListener('keydown', snapKeyHandler);
   document.addEventListener('touchstart', snapTouchStart, {passive: true});
