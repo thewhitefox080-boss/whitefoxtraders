@@ -198,10 +198,20 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .pchip{padding:5px 14px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:12px;font-weight:700}
 .pe{color:#60BB46}.pf{color:#ff6b6b}
 
-/* HERO BANNER SLIDER */
-.hbs{position:relative;width:100%;height:520px;overflow:hidden;background:#000}
+/* SCROLL HIJACK */
+.snap-container{position:relative}
+.snap-section{position:relative;width:100%;overflow:hidden}
+.snap-indicator{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:10;opacity:0.6}
+.snap-indicator span{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g3)}
+.snap-arrow{width:20px;height:20px;border-right:2px solid var(--g3);border-bottom:2px solid var(--g3);transform:rotate(45deg);animation:snapBounce 1.2s ease-in-out infinite}
+@keyframes snapBounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(5px)}}
+.snap-indicator.white span{color:rgba(255,255,255,0.5)}
+.snap-indicator.white .snap-arrow{border-color:rgba(255,255,255,0.5)}
+
+/* HERO BANNER adjust for snap */
+.hbs{position:relative;width:100%;height:100vh;overflow:hidden;background:#000}
 .hbs-track{display:flex;height:100%;transition:transform 0.7s cubic-bezier(0.22,1,0.36,1)}
-.hbs-slide{flex:0 0 100%;height:520px;position:relative;overflow:hidden}
+.hbs-slide{flex:0 0 100%;height:100vh;position:relative;overflow:hidden}
 .hbs-slide.hbs-clickable{cursor:pointer}
 .hbs-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat}
 .hbs-dots{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
@@ -533,8 +543,8 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   /* CART PANEL */
   .cart-pan{width:100%;right:0;left:0;top:auto;bottom:0;height:88vh;border-radius:20px 20px 0 0}
 
-  .hbs{height:220px}
-  .hbs-slide{height:220px}
+  .hbs{height:100vh}
+  .hbs-slide{height:100vh}
   .hbs-arrow{display:none}
   .na-sec{padding:32px 16px 0}
   .na-scroll{grid-template-columns:repeat(2,1fr);gap:10px}
@@ -680,7 +690,11 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     <p class="hero-sub">Genuine Anker, Soundcore & UGreen. Fast delivery across Nepal.</p>
     <div class="hero-btns">
       <button class="btn-blk" onclick="openCatPage('all')">Shop now</button>
-      <button class="btn-lnk" onclick="document.querySelector('.spec-sec').scrollIntoView({behavior:'smooth'})">Learn more</button>
+      <button class="btn-lnk" onclick="snapGoTo(1)">Learn more</button>
+    </div>
+    <div class="snap-indicator" id="snap-ind-0">
+      <span>Scroll</span>
+      <div class="snap-arrow"></div>
     </div>
   </div>
 
@@ -693,6 +707,10 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
       <div class="spec-cell"><div class="spec-ico">📦</div><div class="spec-val" id="stat-delivery">2–3</div><div class="spec-lbl">Day delivery</div></div>
       <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val" id="stat-warranty">2yr</div><div class="spec-lbl">Warranty</div></div>
       <div class="spec-cell"><div class="spec-ico">💳</div><div class="spec-val" id="stat-products">82</div><div class="spec-lbl">Products in stock</div></div>
+    </div>
+    <div class="snap-indicator" id="snap-ind-1">
+      <span>Scroll</span>
+      <div class="snap-arrow"></div>
     </div>
   </div>
 
@@ -722,6 +740,10 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
       <div class="hbs-dot on" onclick="hbsGo(0)"></div>
       <div class="hbs-dot" onclick="hbsGo(1)"></div>
       <div class="hbs-dot" onclick="hbsGo(2)"></div>
+    </div>
+    <div class="snap-indicator white" id="snap-ind-2">
+      <span>Scroll</span>
+      <div class="snap-arrow"></div>
     </div>
   </div>
 
@@ -1368,6 +1390,7 @@ var catConfig = {
 };
 
 function openCatPage(type){
+  snapRelease();
   catState.type = type;
   catState.subCat = null;
   catState.brand = 'all';
@@ -1607,7 +1630,7 @@ function swImgIdxVariant(idx){
 
 function showHome(){
   showPage('pg-home');
-  setTimeout(initReveal, 50);
+  setTimeout(function(){ initReveal(); initSnap(); }, 50);
 }
 
 function openDetail(ri){
@@ -2185,6 +2208,136 @@ function renderRelated(ri){
 function openMobileMenu(){ document.getElementById('mobile-menu').classList.add('on'); document.body.style.overflow='hidden'; }
 function closeMobileMenu(){ document.getElementById('mobile-menu').classList.remove('on'); document.body.style.overflow=''; }
 
+// SCROLL HIJACK
+var snapCur = 0;
+var snapTotal = 3;
+var snapAnimating = false;
+var snapDone = false;
+var snapSections = ['pg-home .hero', 'pg-home .spec-sec', '#hbs'];
+var touchStartY = 0;
+
+function snapGoTo(idx){
+  if(snapAnimating || snapDone) return;
+  if(idx < 0) return;
+  if(idx >= snapTotal){ snapRelease(); return; }
+  snapAnimating = true;
+  var sections = [
+    document.querySelector('.pg.on .hero'),
+    document.querySelector('.pg.on .spec-sec'),
+    document.getElementById('hbs')
+  ];
+  // Slide current section up
+  var cur = sections[snapCur];
+  var next = sections[idx];
+  if(!cur || !next){ snapAnimating = false; return; }
+  // Animate current up
+  cur.style.transition = 'transform 0.75s cubic-bezier(0.77,0,0.18,1), opacity 0.75s';
+  cur.style.transform = 'translateY(-100vh)';
+  cur.style.opacity = '0';
+  // Animate next from below
+  next.style.transition = 'none';
+  next.style.transform = 'translateY(100vh)';
+  next.style.opacity = '0';
+  next.style.display = 'flex';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      next.style.transition = 'transform 0.75s cubic-bezier(0.77,0,0.18,1), opacity 0.75s';
+      next.style.transform = 'translateY(0)';
+      next.style.opacity = '1';
+    });
+  });
+  snapCur = idx;
+  setTimeout(function(){
+    snapAnimating = false;
+    if(snapCur === snapTotal - 1){
+      // After last section, release on next scroll
+    }
+    // Trigger stats counter when trust section appears
+    if(snapCur === 1) initStatsCounter();
+  }, 800);
+}
+
+function snapRelease(){
+  snapDone = true;
+  document.body.style.overflow = '';
+  // Scroll to content below the snap sections
+  var naSection = document.querySelector('.na-sec') || document.querySelector('.brand-sec');
+  if(naSection){
+    naSection.scrollIntoView({behavior:'smooth'});
+  }
+  // Remove snap event listeners
+  window.removeEventListener('wheel', snapWheelHandler);
+  window.removeEventListener('keydown', snapKeyHandler);
+  document.removeEventListener('touchstart', snapTouchStart);
+  document.removeEventListener('touchend', snapTouchEnd);
+}
+
+function snapWheelHandler(e){
+  if(snapDone) return;
+  e.preventDefault();
+  if(snapAnimating) return;
+  if(e.deltaY > 30){
+    if(snapCur < snapTotal - 1){
+      snapGoTo(snapCur + 1);
+    } else {
+      snapRelease();
+    }
+  } else if(e.deltaY < -30 && snapCur > 0){
+    // Scroll back up between snap sections
+    snapGoTo(snapCur - 1);
+  }
+}
+
+function snapKeyHandler(e){
+  if(snapDone) return;
+  if(e.key === 'ArrowDown' || e.key === 'PageDown'){
+    e.preventDefault();
+    if(snapCur < snapTotal - 1) snapGoTo(snapCur + 1);
+    else snapRelease();
+  } else if(e.key === 'ArrowUp' || e.key === 'PageUp'){
+    e.preventDefault();
+    if(snapCur > 0) snapGoTo(snapCur - 1);
+  }
+}
+
+function snapTouchStart(e){ touchStartY = e.touches[0].clientY; }
+function snapTouchEnd(e){
+  if(snapDone) return;
+  var diff = touchStartY - e.changedTouches[0].clientY;
+  if(Math.abs(diff) < 50) return;
+  if(diff > 0){
+    if(snapCur < snapTotal - 1) snapGoTo(snapCur + 1);
+    else snapRelease();
+  } else if(snapCur > 0){
+    snapGoTo(snapCur - 1);
+  }
+}
+
+function initSnap(){
+  if(window.innerWidth < 768){ return; } // Skip on mobile
+  snapCur = 0;
+  snapDone = false;
+  snapAnimating = false;
+  document.body.style.overflow = 'hidden';
+  // Reset all sections
+  var sections = [
+    document.querySelector('.pg.on .hero'),
+    document.querySelector('.pg.on .spec-sec'),
+    document.getElementById('hbs')
+  ];
+  sections.forEach(function(s, i){
+    if(!s) return;
+    s.style.transition = 'none';
+    s.style.transform = i === 0 ? 'translateY(0)' : 'translateY(100vh)';
+    s.style.opacity = i === 0 ? '1' : '0';
+    if(i !== 0) s.style.display = 'none'; else s.style.display = 'flex';
+  });
+  window.addEventListener('wheel', snapWheelHandler, {passive: false});
+  window.addEventListener('keydown', snapKeyHandler);
+  document.addEventListener('touchstart', snapTouchStart, {passive: true});
+  document.addEventListener('touchend', snapTouchEnd, {passive: true});
+}
+
 // Hero Banner Slider
 var hbsCur = 0;
 var hbsTotal = 3;
@@ -2283,6 +2436,7 @@ fetch(API_URL + '/products')
     renderFeatured();
     initReveal();
     initStatsCounter();
+    initSnap();
     // Restore page on refresh
     var savedPage = sessionStorage.getItem('currentPage');
     var savedCat = sessionStorage.getItem('catState');
