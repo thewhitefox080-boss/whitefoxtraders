@@ -2232,29 +2232,40 @@ function snapGoTo(idx){
   var next = sections[idx];
   if(!cur || !next){ snapAnimating = false; return; }
   snapAnimating = true;
-  var dir = idx > snapCur ? 1 : -1;
 
-  // Position next section just off screen
+  // Fade + drift current section up and out
+  cur.style.transition = 'transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
+  cur.style.transform = 'translateY(-60px)';
+  cur.style.opacity = '0';
+  cur.style.pointerEvents = 'none';
+
+  // Fade + drift next section up from below
   next.style.transition = 'none';
-  next.style.transform = 'translateY(' + (dir * 100) + 'vh)';
-  next.style.zIndex = '2';
-  cur.style.zIndex = '1';
+  next.style.transform = 'translateY(60px)';
+  next.style.opacity = '0';
+  next.style.visibility = 'visible';
 
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      // Slide both
-      cur.style.transition = 'transform 0.8s cubic-bezier(0.77,0,0.18,1)';
-      cur.style.transform = 'translateY(' + (-dir * 100) + 'vh)';
-      next.style.transition = 'transform 0.8s cubic-bezier(0.77,0,0.18,1)';
+      next.style.transition = 'transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
       next.style.transform = 'translateY(0)';
+      next.style.opacity = '1';
+      next.style.pointerEvents = '';
     });
   });
 
   snapCur = idx;
   setTimeout(function(){
+    // Hide previous section
+    var sections2 = getSnapSections();
+    sections2.forEach(function(s, i){
+      if(i !== snapCur){
+        s.style.visibility = 'hidden';
+      }
+    });
     snapAnimating = false;
     if(snapCur === 1) initStatsCounter();
-  }, 850);
+  }, 950);
 }
 
 function snapRelease(){
@@ -2265,7 +2276,7 @@ function snapRelease(){
   window.removeEventListener('keydown', snapKeyHandler);
   document.removeEventListener('touchstart', snapTouchStart);
   document.removeEventListener('touchend', snapTouchEnd);
-  // Restore sections to normal flow
+  // Restore all sections
   var sections = getSnapSections();
   sections.forEach(function(s){
     if(!s) return;
@@ -2278,8 +2289,10 @@ function snapRelease(){
     s.style.height = '';
     s.style.transform = '';
     s.style.transition = '';
+    s.style.opacity = '';
+    s.style.visibility = '';
+    s.style.pointerEvents = '';
   });
-  // Scroll to content below
   setTimeout(function(){
     var next = document.querySelector('.na-sec') || document.querySelector('.brand-sec');
     if(next) next.scrollIntoView({behavior:'smooth'});
@@ -2332,17 +2345,18 @@ function initSnap(){
   sections.forEach(function(s, i){
     if(!s) return;
     s.style.transition = 'none';
-    s.style.transform = i === 0 ? 'translateY(0)' : 'translateY(100vh)';
+    s.style.transform = 'translateY(0)';
+    s.style.opacity = i === 0 ? '1' : '0';
+    s.style.visibility = i === 0 ? 'visible' : 'hidden';
     s.style.position = 'fixed';
-    s.style.top = '84px'; // below navbar (52px) + ticker (32px)
+    s.style.top = '84px';
     s.style.left = '0';
     s.style.right = '0';
     s.style.width = '100%';
-    s.style.zIndex = i === 0 ? '2' : '1';
     s.style.height = 'calc(100vh - 84px)';
-    // Adjust ticker position
+    s.style.zIndex = i === 0 ? '2' : '1';
+    s.style.pointerEvents = i === 0 ? '' : 'none';
   });
-  // Hide page content below snap sections
   document.body.style.overflow = 'hidden';
   window.addEventListener('wheel', snapWheelHandler, {passive: false});
   window.addEventListener('keydown', snapKeyHandler);
