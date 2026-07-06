@@ -695,7 +695,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     <p class="hero-sub">Genuine Anker, Soundcore & UGreen. Fast delivery across Nepal.</p>
     <div class="hero-btns">
       <button class="btn-blk" onclick="openCatPage('all')">Shop now</button>
-      <button class="btn-lnk" onclick="snapGoTo(1)">Learn more</button>
+      <button class="btn-lnk" onclick="document.querySelector('#pg-home .spec-sec').scrollIntoView({behavior:'smooth'})">Learn more</button>
     </div>
     <div class="snap-indicator" id="snap-ind-0">
       <span>Scroll</span>
@@ -1395,7 +1395,6 @@ var catConfig = {
 };
 
 function openCatPage(type){
-  snapRelease();
   catState.type = type;
   catState.subCat = null;
   catState.brand = 'all';
@@ -1635,7 +1634,7 @@ function swImgIdxVariant(idx){
 
 function showHome(){
   showPage('pg-home');
-  setTimeout(function(){ initReveal(); initSnap(); }, 50);
+  setTimeout(function(){ initReveal(); initSnap(); }, 100);
 }
 
 function openDetail(ri){
@@ -2213,214 +2212,46 @@ function renderRelated(ri){
 function openMobileMenu(){ document.getElementById('mobile-menu').classList.add('on'); document.body.style.overflow='hidden'; }
 function closeMobileMenu(){ document.getElementById('mobile-menu').classList.remove('on'); document.body.style.overflow=''; }
 
-// SCROLL HIJACK
-var snapCur = 0;
-var snapTotal = 1;
-var snapAnimating = false;
-var snapDone = false;
-var touchStartY = 0;
-
-function getSnapSections(){
-  return [
-    document.querySelector('#pg-home .hero'),
-    document.querySelector('#pg-home .spec-sec')
-  ];
-}
-
-function snapGoTo(idx){
-  if(snapAnimating || snapDone) return;
-  if(idx < 0) return;
-  if(idx >= snapTotal){ snapRelease(); return; }
-  var sections = getSnapSections();
-  var cur = sections[snapCur];
-  var next = sections[idx];
-  if(!cur || !next){ snapAnimating = false; return; }
-  snapAnimating = true;
-
-  // Set z-index so next appears above current
-  cur.style.zIndex = '3';
-  next.style.zIndex = '4';
-  next.style.visibility = 'visible';
-
-  // Fade + drift current section up and out
-  cur.style.transition = 'transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
-  cur.style.transform = 'translateY(-60px)';
-  cur.style.opacity = '0';
-  cur.style.pointerEvents = 'none';
-
-  // Fade + drift next section up from below
-  next.style.transition = 'none';
-  next.style.transform = 'translateY(60px)';
-  next.style.opacity = '0';
-  next.style.visibility = 'visible';
-
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      next.style.transition = 'transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
-      next.style.transform = 'translateY(0)';
-      next.style.opacity = '1';
-      next.style.pointerEvents = '';
-    });
-  });
-
-  snapCur = idx;
-  setTimeout(function(){
-    snapAnimating = false;
-    initStatsCounter();
-
-    // Get trust position BEFORE restoring flow
-    var trust = document.querySelector('#pg-home .spec-sec');
-    var hero = document.querySelector('#pg-home .hero');
-    var heroH = hero ? hero.offsetHeight : window.innerHeight;
-
-    // Restore sections to normal flow
-    var sections = getSnapSections();
-    sections.forEach(function(s){
-      if(!s) return;
-      s.style.position = '';
-      s.style.top = '';
-      s.style.left = '';
-      s.style.right = '';
-      s.style.width = '';
-      s.style.zIndex = '';
-      s.style.height = '';
-      s.style.transform = '';
-      s.style.transition = '';
-      s.style.opacity = '';
-      s.style.visibility = '';
-      s.style.pointerEvents = '';
-    });
-
-    // Restore hidden home children
-    document.querySelectorAll('#pg-home > *').forEach(function(el){ el.style.visibility = ''; });
-
-    // Release scroll controls
-    document.body.style.overflow = '';
-    document.getElementById('snap-overlay').classList.remove('on');
-    window.removeEventListener('wheel', snapWheelHandler);
-    window.removeEventListener('keydown', snapKeyHandler);
-    document.removeEventListener('touchstart', snapTouchStart);
-    document.removeEventListener('touchend', snapTouchEnd);
-    snapDone = true;
-
-    // Set scroll position to start of trust section (= hero height + navbar + ticker)
-    window.scrollTo({top: heroH + 84, behavior: 'instant'});
-  }, 950);
-}
-
-function snapRelease(){
-  if(snapDone) return;
-  snapDone = true;
-  document.body.style.overflow = '';
-  document.getElementById('snap-overlay').classList.remove('on');
-  window.removeEventListener('wheel', snapWheelHandler);
-  window.removeEventListener('keydown', snapKeyHandler);
-  document.removeEventListener('touchstart', snapTouchStart);
-  document.removeEventListener('touchend', snapTouchEnd);
-
-  // Restore all sections to normal flow
-  var sections = getSnapSections();
-  sections.forEach(function(s, i){
-    if(!s) return;
-    s.style.position = '';
-    s.style.top = '';
-    s.style.left = '';
-    s.style.right = '';
-    s.style.width = '';
-    s.style.zIndex = '';
-    s.style.height = '';
-    s.style.transform = '';
-    s.style.transition = '';
-    s.style.opacity = '';
-    s.style.visibility = '';
-    s.style.pointerEvents = '';
-  });
-
-  // Restore all hidden home children
-  var homeChildren = document.querySelectorAll('#pg-home > *');
-  homeChildren.forEach(function(el){ el.style.visibility = ''; });
-
-  // Scroll just past hero + trust sections
-  var hero = document.querySelector('#pg-home .hero');
-  var trust = document.querySelector('#pg-home .spec-sec');
-  var totalHeight = (hero ? hero.offsetHeight : 0) + (trust ? trust.offsetHeight : 0) + 84;
-  window.scrollTo(0, totalHeight);
-}
-
-function snapWheelHandler(e){
-  if(snapDone) return;
-  e.preventDefault();
-  if(snapAnimating) return;
-  if(e.deltaY > 20){
-    if(snapCur < snapTotal - 1) snapGoTo(snapCur + 1);
-    else snapRelease();
-  } else if(e.deltaY < -20 && snapCur > 0){
-    snapGoTo(snapCur - 1);
-  }
-}
-
-function snapKeyHandler(e){
-  if(snapDone) return;
-  if(e.key === 'ArrowDown' || e.key === 'PageDown'){
-    e.preventDefault();
-    if(snapCur < snapTotal - 1) snapGoTo(snapCur + 1);
-    else snapRelease();
-  } else if((e.key === 'ArrowUp' || e.key === 'PageUp') && snapCur > 0){
-    e.preventDefault();
-    snapGoTo(snapCur - 1);
-  }
-}
-
-function snapTouchStart(e){ touchStartY = e.touches[0].clientY; }
-function snapTouchEnd(e){
-  if(snapDone) return;
-  var diff = touchStartY - e.changedTouches[0].clientY;
-  if(Math.abs(diff) < 50) return;
-  if(diff > 0){
-    if(snapCur < snapTotal - 1) snapGoTo(snapCur + 1);
-    else snapRelease();
-  } else if(snapCur > 0){
-    snapGoTo(snapCur - 1);
-  }
-}
-
+// SCROLL HIJACK - CSS Native Snap
 function initSnap(){
   if(window.innerWidth < 768) return;
-  snapCur = 0;
-  snapDone = false;
-  snapAnimating = false;
-  var sections = getSnapSections();
-
-  // Hide all page content except snap sections
-  var homeChildren = document.querySelectorAll('#pg-home > *');
-  homeChildren.forEach(function(el){
-    var isSnap = sections.indexOf(el) > -1;
-    if(!isSnap) el.style.visibility = 'hidden';
-  });
-
-  sections.forEach(function(s, i){
-    if(!s) return;
-    s.style.transition = 'none';
-    s.style.transform = 'translateY(0)';
-    s.style.opacity = i === 0 ? '1' : '0';
-    s.style.visibility = i === 0 ? 'visible' : 'hidden';
-    s.style.position = 'fixed';
-    s.style.top = '84px';
-    s.style.left = '0';
-    s.style.right = '0';
-    s.style.width = '100%';
-    s.style.zIndex = '10';
-    s.style.pointerEvents = i === 0 ? '' : 'none';
-    // Only force full height on hero
-    if(i === 0) s.style.height = 'calc(100vh - 84px)';
-  });
-
-  document.body.style.overflow = 'hidden';
-  document.getElementById('snap-overlay').classList.add('on');
-  window.addEventListener('wheel', snapWheelHandler, {passive: false});
-  window.addEventListener('keydown', snapKeyHandler);
-  document.addEventListener('touchstart', snapTouchStart, {passive: true});
-  document.addEventListener('touchend', snapTouchEnd, {passive: true});
+  var homeEl = document.getElementById('pg-home');
+  homeEl.style.overflowY = 'scroll';
+  homeEl.style.height = '100vh';
+  homeEl.style.scrollSnapType = 'y mandatory';
+  homeEl.style.scrollBehavior = 'smooth';
+  var hero = document.querySelector('#pg-home .hero');
+  var trust = document.querySelector('#pg-home .spec-sec');
+  if(hero){
+    hero.style.scrollSnapAlign = 'start';
+    hero.style.scrollSnapStop = 'always';
+  }
+  if(trust){
+    trust.style.scrollSnapAlign = 'start';
+    trust.style.scrollSnapStop = 'normal';
+  }
+  // After trust, release snap
+  if(trust){
+    var obs = new IntersectionObserver(function(entries){
+      if(entries[0].isIntersecting && entries[0].intersectionRatio > 0.9){
+        // User reached trust section - release snap
+        setTimeout(function(){
+          homeEl.style.scrollSnapType = '';
+          homeEl.style.overflowY = '';
+          homeEl.style.height = '';
+          homeEl.style.scrollBehavior = '';
+          if(hero) hero.style.scrollSnapAlign = '';
+          if(trust) trust.style.scrollSnapAlign = '';
+          // Transfer scroll position to window
+          var scrollTop = homeEl.scrollTop;
+          homeEl.style.overflowY = 'visible';
+          window.scrollTo(0, scrollTop);
+          obs.disconnect();
+        }, 600);
+      }
+    }, {threshold: 0.9, root: homeEl});
+    obs.observe(trust);
+  }
 }
 
 // Hero Banner Slider
