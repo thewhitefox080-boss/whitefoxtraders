@@ -2290,7 +2290,7 @@ function snapRelease(){
 
   // Restore all sections to normal flow
   var sections = getSnapSections();
-  sections.forEach(function(s){
+  sections.forEach(function(s, i){
     if(!s) return;
     s.style.position = '';
     s.style.top = '';
@@ -2380,9 +2380,10 @@ function initSnap(){
     s.style.left = '0';
     s.style.right = '0';
     s.style.width = '100%';
-    s.style.height = 'calc(100vh - 84px)';
     s.style.zIndex = '10';
     s.style.pointerEvents = i === 0 ? '' : 'none';
+    // Only force full height on hero and trust, not banner
+    if(i < 2) s.style.height = 'calc(100vh - 84px)';
   });
 
   document.body.style.overflow = 'hidden';
