@@ -2310,8 +2310,12 @@ function snapRelease(){
   var homeChildren = document.querySelectorAll('#pg-home > *');
   homeChildren.forEach(function(el){ el.style.visibility = ''; });
 
-  // Scroll to top of content naturally
-  window.scrollTo(0, 0);
+  // Calculate height of the 3 snap sections and scroll past them
+  var hero = document.querySelector('#pg-home .hero');
+  var trust = document.querySelector('#pg-home .spec-sec');
+  var hbs = document.getElementById('hbs');
+  var totalHeight = (hero ? hero.offsetHeight : 0) + (trust ? trust.offsetHeight : 0) + (hbs ? hbs.offsetHeight : 0) + 84;
+  window.scrollTo(0, totalHeight);
 }
 
 function snapWheelHandler(e){
