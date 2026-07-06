@@ -2215,7 +2215,7 @@ function closeMobileMenu(){ document.getElementById('mobile-menu').classList.rem
 
 // SCROLL HIJACK
 var snapCur = 0;
-var snapTotal = 2;
+var snapTotal = 1;
 var snapAnimating = false;
 var snapDone = false;
 var touchStartY = 0;
@@ -2265,15 +2265,10 @@ function snapGoTo(idx){
 
   snapCur = idx;
   setTimeout(function(){
-    // Hide previous section
-    var sections2 = getSnapSections();
-    sections2.forEach(function(s, i){
-      if(i !== snapCur){
-        s.style.visibility = 'hidden';
-      }
-    });
     snapAnimating = false;
-    if(snapCur === 1) initStatsCounter();
+    initStatsCounter();
+    // After hero→trust animation, release to normal scroll
+    snapRelease();
   }, 950);
 }
 
@@ -2380,8 +2375,8 @@ function initSnap(){
     s.style.width = '100%';
     s.style.zIndex = '10';
     s.style.pointerEvents = i === 0 ? '' : 'none';
-    // Only force full height on hero and trust, not banner
-    if(i < 2) s.style.height = 'calc(100vh - 84px)';
+    // Only force full height on hero
+    if(i === 0) s.style.height = 'calc(100vh - 84px)';
   });
 
   document.body.style.overflow = 'hidden';
