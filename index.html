@@ -2267,9 +2267,15 @@ function snapGoTo(idx){
   setTimeout(function(){
     snapAnimating = false;
     initStatsCounter();
-    // Trust is now visible - restore to normal flow keeping it visible
+
+    // Get trust position BEFORE restoring flow
+    var trust = document.querySelector('#pg-home .spec-sec');
+    var hero = document.querySelector('#pg-home .hero');
+    var heroH = hero ? hero.offsetHeight : window.innerHeight;
+
+    // Restore sections to normal flow
     var sections = getSnapSections();
-    sections.forEach(function(s, i){
+    sections.forEach(function(s){
       if(!s) return;
       s.style.position = '';
       s.style.top = '';
@@ -2284,10 +2290,11 @@ function snapGoTo(idx){
       s.style.visibility = '';
       s.style.pointerEvents = '';
     });
+
     // Restore hidden home children
-    var homeChildren = document.querySelectorAll('#pg-home > *');
-    homeChildren.forEach(function(el){ el.style.visibility = ''; });
-    // Release scroll
+    document.querySelectorAll('#pg-home > *').forEach(function(el){ el.style.visibility = ''; });
+
+    // Release scroll controls
     document.body.style.overflow = '';
     document.getElementById('snap-overlay').classList.remove('on');
     window.removeEventListener('wheel', snapWheelHandler);
@@ -2295,9 +2302,9 @@ function snapGoTo(idx){
     document.removeEventListener('touchstart', snapTouchStart);
     document.removeEventListener('touchend', snapTouchEnd);
     snapDone = true;
-    // Scroll to trust section
-    var trust = document.querySelector('#pg-home .spec-sec');
-    if(trust) trust.scrollIntoView({behavior:'instant'});
+
+    // Set scroll position to start of trust section (= hero height + navbar + ticker)
+    window.scrollTo({top: heroH + 84, behavior: 'instant'});
   }, 950);
 }
 
