@@ -2212,46 +2212,101 @@ function renderRelated(ri){
 function openMobileMenu(){ document.getElementById('mobile-menu').classList.add('on'); document.body.style.overflow='hidden'; }
 function closeMobileMenu(){ document.getElementById('mobile-menu').classList.remove('on'); document.body.style.overflow=''; }
 
-// SCROLL HIJACK - CSS Native Snap
+// SCROLL HIJACK - Simple intercept first scroll only
+var snapDone = false;
+var snapAnimating = false;
+var touchStartY = 0;
+
 function initSnap(){
   if(window.innerWidth < 768) return;
-  var homeEl = document.getElementById('pg-home');
-  homeEl.style.overflowY = 'scroll';
-  homeEl.style.height = '100vh';
-  homeEl.style.scrollSnapType = 'y mandatory';
-  homeEl.style.scrollBehavior = 'smooth';
+  snapDone = false;
+  snapAnimating = false;
+  window.addEventListener('wheel', snapFirstScroll, {passive: false});
+  document.addEventListener('touchstart', function(e){ touchStartY = e.touches[0].clientY; }, {passive: true});
+  document.addEventListener('touchend', snapFirstTouch, {passive: true});
+}
+
+function snapFirstScroll(e){
+  if(snapDone || snapAnimating) return;
+  if(e.deltaY < 20) return; // ignore small scrolls and scroll up
+  e.preventDefault();
+  doSnapAnimation();
+}
+
+function snapFirstTouch(e){
+  if(snapDone || snapAnimating) return;
+  var diff = touchStartY - e.changedTouches[0].clientY;
+  if(diff < 50) return;
+  doSnapAnimation();
+}
+
+function doSnapAnimation(){
+  snapAnimating = true;
   var hero = document.querySelector('#pg-home .hero');
   var trust = document.querySelector('#pg-home .spec-sec');
-  if(hero){
-    hero.style.scrollSnapAlign = 'start';
-    hero.style.scrollSnapStop = 'always';
-  }
-  if(trust){
-    trust.style.scrollSnapAlign = 'start';
-    trust.style.scrollSnapStop = 'normal';
-  }
-  // After trust, release snap
-  if(trust){
-    var obs = new IntersectionObserver(function(entries){
-      if(entries[0].isIntersecting && entries[0].intersectionRatio > 0.9){
-        // User reached trust section - release snap
-        setTimeout(function(){
-          homeEl.style.scrollSnapType = '';
-          homeEl.style.overflowY = '';
-          homeEl.style.height = '';
-          homeEl.style.scrollBehavior = '';
-          if(hero) hero.style.scrollSnapAlign = '';
-          if(trust) trust.style.scrollSnapAlign = '';
-          // Transfer scroll position to window
-          var scrollTop = homeEl.scrollTop;
-          homeEl.style.overflowY = 'visible';
-          window.scrollTo(0, scrollTop);
-          obs.disconnect();
-        }, 600);
-      }
-    }, {threshold: 0.9, root: homeEl});
-    obs.observe(trust);
-  }
+  if(!hero || !trust){ snapAnimating = false; snapDone = true; return; }
+
+  // Lock scroll
+  document.body.style.overflow = 'hidden';
+
+  // Set trust just below viewport
+  trust.style.position = 'fixed';
+  trust.style.top = '84px';
+  trust.style.left = '0';
+  trust.style.right = '0';
+  trust.style.width = '100%';
+  trust.style.height = 'calc(100vh - 84px)';
+  trust.style.zIndex = '20';
+  trust.style.transform = 'translateY(40px)';
+  trust.style.opacity = '0';
+  trust.style.transition = 'none';
+  trust.style.background = 'var(--g1)';
+
+  // Set hero to animate out
+  hero.style.transition = 'transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
+  hero.style.transform = 'translateY(-50px)';
+  hero.style.opacity = '0';
+
+  // Animate trust in
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      trust.style.transition = 'transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
+      trust.style.transform = 'translateY(0)';
+      trust.style.opacity = '1';
+    });
+  });
+
+  setTimeout(function(){
+    // Clean up - restore everything to normal flow
+    hero.style.transition = '';
+    hero.style.transform = '';
+    hero.style.opacity = '';
+
+    trust.style.position = '';
+    trust.style.top = '';
+    trust.style.left = '';
+    trust.style.right = '';
+    trust.style.width = '';
+    trust.style.height = '';
+    trust.style.zIndex = '';
+    trust.style.transform = '';
+    trust.style.opacity = '';
+    trust.style.transition = '';
+    trust.style.background = '';
+
+    document.body.style.overflow = '';
+    snapDone = true;
+    snapAnimating = false;
+
+    // Remove listeners
+    window.removeEventListener('wheel', snapFirstScroll);
+
+    // Scroll window to trust section position
+    var trustTop = trust.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({top: trustTop, behavior: 'instant'});
+
+    initStatsCounter();
+  }, 920);
 }
 
 // Hero Banner Slider
