@@ -198,19 +198,7 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .pchip{padding:5px 14px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:12px;font-weight:700}
 .pe{color:#60BB46}.pf{color:#ff6b6b}
 
-/* SCROLL HIJACK */
-.snap-spacer{height:300vh;display:none}
-.snap-spacer.on{display:block}
-.snap-overlay{display:none;position:fixed;inset:0;background:var(--white);z-index:0;top:84px}
-.snap-overlay.on{display:block}
-.snap-indicator{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:10;opacity:0.6}
-.snap-indicator span{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g3)}
-.snap-arrow{width:20px;height:20px;border-right:2px solid var(--g3);border-bottom:2px solid var(--g3);transform:rotate(45deg);animation:snapBounce 1.2s ease-in-out infinite}
-@keyframes snapBounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(5px)}}
-.snap-indicator.white span{color:rgba(255,255,255,0.5)}
-.snap-indicator.white .snap-arrow{border-color:rgba(255,255,255,0.5)}
-
-/* HERO BANNER adjust for snap */
+/* HERO BANNER */
 .hbs{position:relative;width:100%;height:468px;overflow:hidden;background:#000}
 .hbs-track{display:flex;height:100%;transition:transform 0.7s cubic-bezier(0.22,1,0.36,1)}
 .hbs-slide{flex:0 0 100%;height:468px;position:relative;overflow:hidden}
@@ -684,9 +672,6 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   </div>
 </div>
 
-<!-- SNAP OVERLAY -->
-<div class="snap-overlay" id="snap-overlay"></div>
-
 <!-- HOME -->
 <div class="pg on" id="pg-home">
   <div class="hero">
@@ -695,12 +680,9 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     <p class="hero-sub">Genuine Anker, Soundcore & UGreen. Fast delivery across Nepal.</p>
     <div class="hero-btns">
       <button class="btn-blk" onclick="openCatPage('all')">Shop now</button>
-      <button class="btn-lnk" onclick="document.querySelector('#pg-home .spec-sec').scrollIntoView({behavior:'smooth'})">Learn more</button>
+      <button class="btn-lnk" onclick="document.querySelector('.spec-sec').scrollIntoView({behavior:'smooth'})">Learn more</button>
     </div>
-    <div class="snap-indicator" id="snap-ind-0">
-      <span>Scroll</span>
-      <div class="snap-arrow"></div>
-    </div>
+
   </div>
 
   <!-- BUILT ON TRUST -->
@@ -713,10 +695,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
       <div class="spec-cell"><div class="spec-ico">🛡️</div><div class="spec-val" id="stat-warranty">2yr</div><div class="spec-lbl">Warranty</div></div>
       <div class="spec-cell"><div class="spec-ico">💳</div><div class="spec-val" id="stat-products">82</div><div class="spec-lbl">Products in stock</div></div>
     </div>
-    <div class="snap-indicator" id="snap-ind-1">
-      <span>Scroll</span>
-      <div class="snap-arrow"></div>
-    </div>
+
   </div>
 
   <!-- HERO BANNER SLIDER -->
@@ -746,10 +725,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
       <div class="hbs-dot" onclick="hbsGo(1)"></div>
       <div class="hbs-dot" onclick="hbsGo(2)"></div>
     </div>
-    <div class="snap-indicator white" id="snap-ind-2">
-      <span>Scroll</span>
-      <div class="snap-arrow"></div>
-    </div>
+
   </div>
 
   <!-- SHOP BY BRAND -->
@@ -1634,7 +1610,7 @@ function swImgIdxVariant(idx){
 
 function showHome(){
   showPage('pg-home');
-  setTimeout(function(){ initReveal(); initSnap(); }, 100);
+  setTimeout(function(){ initReveal(); }, 100);
 }
 
 function openDetail(ri){
@@ -2213,164 +2189,6 @@ function openMobileMenu(){ document.getElementById('mobile-menu').classList.add(
 function closeMobileMenu(){ document.getElementById('mobile-menu').classList.remove('on'); document.body.style.overflow=''; }
 
 // SCROLL HIJACK - Simple intercept first scroll only
-var snapDone = false;
-var snapAnimating = false;
-var touchStartY = 0;
-
-function initSnap(){
-  if(window.innerWidth < 768) return;
-  snapDone = false;
-  snapAnimating = false;
-  window.addEventListener('wheel', snapWheelHandler, {passive: false});
-  document.addEventListener('touchstart', function(e){ touchStartY = e.touches[0].clientY; }, {passive: true});
-  document.addEventListener('touchend', snapTouchHandler, {passive: true});
-}
-
-function snapWheelHandler(e){
-  if(snapAnimating) return;
-  var hero = document.querySelector('#pg-home .hero');
-  var trust = document.querySelector('#pg-home .spec-sec');
-  if(!hero || !trust) return;
-
-  // Scroll DOWN: only when at top of page and snap not done
-  if(e.deltaY > 20 && !snapDone && window.scrollY < 10){
-    e.preventDefault();
-    doSnapForward();
-    return;
-  }
-
-  // Scroll UP: only when at top of trust section
-  if(e.deltaY < -20 && snapDone){
-    var trustTop = trust.getBoundingClientRect().top;
-    if(Math.abs(trustTop) < 30){ // near top of trust
-      e.preventDefault();
-      doSnapReverse();
-    }
-  }
-}
-
-function snapTouchHandler(e){
-  if(snapAnimating) return;
-  var diff = touchStartY - e.changedTouches[0].clientY;
-  var hero = document.querySelector('#pg-home .hero');
-  var trust = document.querySelector('#pg-home .spec-sec');
-  if(!hero || !trust) return;
-
-  if(diff > 50 && !snapDone && window.scrollY < 10){
-    doSnapForward();
-  } else if(diff < -50 && snapDone){
-    var trustTop = trust.getBoundingClientRect().top;
-    if(Math.abs(trustTop) < 30) doSnapReverse();
-  }
-}
-
-function doSnapForward(){
-  snapAnimating = true;
-  var hero = document.querySelector('#pg-home .hero');
-  var trust = document.querySelector('#pg-home .spec-sec');
-  document.body.style.overflow = 'hidden';
-
-  // Fix trust in place, starting from below
-  trust.style.position = 'fixed';
-  trust.style.top = '84px';
-  trust.style.left = '0';
-  trust.style.right = '0';
-  trust.style.width = '100%';
-  trust.style.height = 'calc(100vh - 84px)';
-  trust.style.zIndex = '20';
-  trust.style.transform = 'translateY(40px)';
-  trust.style.opacity = '0';
-  trust.style.transition = 'none';
-  trust.style.background = 'var(--g1)';
-
-  hero.style.transition = 'transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
-  hero.style.transform = 'translateY(-50px)';
-  hero.style.opacity = '0';
-
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      trust.style.transition = 'transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
-      trust.style.transform = 'translateY(0)';
-      trust.style.opacity = '1';
-    });
-  });
-
-  setTimeout(function(){
-    hero.style.transition = '';
-    hero.style.transform = '';
-    hero.style.opacity = '';
-    trust.style.position = '';
-    trust.style.top = '';
-    trust.style.left = '';
-    trust.style.right = '';
-    trust.style.width = '';
-    trust.style.height = '';
-    trust.style.zIndex = '';
-    trust.style.transform = '';
-    trust.style.opacity = '';
-    trust.style.transition = '';
-    trust.style.background = '';
-    document.body.style.overflow = '';
-    snapDone = true;
-    snapAnimating = false;
-    var trustTop = trust.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({top: trustTop, behavior: 'instant'});
-    initStatsCounter();
-  }, 920);
-}
-
-function doSnapReverse(){
-  snapAnimating = true;
-  var hero = document.querySelector('#pg-home .hero');
-  var trust = document.querySelector('#pg-home .spec-sec');
-  document.body.style.overflow = 'hidden';
-
-  // Fix hero in place, starting from above
-  hero.style.position = 'fixed';
-  hero.style.top = '84px';
-  hero.style.left = '0';
-  hero.style.right = '0';
-  hero.style.width = '100%';
-  hero.style.height = 'calc(100vh - 84px)';
-  hero.style.zIndex = '20';
-  hero.style.transform = 'translateY(-40px)';
-  hero.style.opacity = '0';
-  hero.style.transition = 'none';
-  hero.style.background = 'var(--g1)';
-
-  trust.style.transition = 'transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
-  trust.style.transform = 'translateY(50px)';
-  trust.style.opacity = '0';
-
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      hero.style.transition = 'transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease';
-      hero.style.transform = 'translateY(0)';
-      hero.style.opacity = '1';
-    });
-  });
-
-  setTimeout(function(){
-    trust.style.transition = '';
-    trust.style.transform = '';
-    trust.style.opacity = '';
-    hero.style.position = '';
-    hero.style.top = '';
-    hero.style.left = '';
-    hero.style.right = '';
-    hero.style.width = '';
-    hero.style.height = '';
-    hero.style.zIndex = '';
-    hero.style.transform = '';
-    hero.style.opacity = '';
-    hero.style.transition = '';
-    hero.style.background = '';
-    document.body.style.overflow = '';
-    snapDone = false;
-    snapAnimating = false;
-    window.scrollTo({top: 0, behavior: 'instant'});
-  }, 920);
-}
 
 // Hero Banner Slider
 var hbsCur = 0;
@@ -2470,7 +2288,7 @@ fetch(API_URL + '/products')
     renderFeatured();
     initReveal();
     initStatsCounter();
-    initSnap();
+    
     // Restore page on refresh
     var savedPage = sessionStorage.getItem('currentPage');
     var savedCat = sessionStorage.getItem('catState');
