@@ -2290,9 +2290,8 @@ fetch(API_URL + '/products')
     renderFeatured();
     initReveal();
     initStatsCounter();
-    
-    // Restore page on refresh
-    // Restore page from URL hash on load/refresh
+
+    // Restore page from URL hash on refresh
     var hash = window.location.hash;
     if(hash.indexOf('#product-') === 0){
       var ri = parseInt(hash.replace('#product-', ''), 10);
@@ -2302,9 +2301,6 @@ fetch(API_URL + '/products')
       catState.type = catType;
       renderCatPage();
       showPage('pg-cat');
-    } else {
-      // Default homepage
-      window.location.hash = '';
     }
   })
   .catch(function(){
