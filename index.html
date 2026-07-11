@@ -1339,11 +1339,8 @@ function showPage(id){
   document.getElementById('pg-cat').classList.remove('on');
   if(id === 'pg-cat'){
     document.getElementById('pg-cat').classList.add('on');
-    sessionStorage.setItem('currentPage','cat');
-    sessionStorage.setItem('catState', JSON.stringify(catState));
   } else {
     document.getElementById(id).classList.add('on');
-    if(id === 'pg-home') sessionStorage.removeItem('currentPage');
   }
   window.scrollTo(0,0);
 }
@@ -1381,6 +1378,7 @@ function openCatPage(type){
   catState.search = null;
   var si = document.querySelector('.search-wrap input');
   if(si) si.value = '';
+  history.replaceState(null, '', '#cat-'+type);
   renderCatPage();
   showPage('pg-cat');
   navPush({type:'cat', catState: JSON.parse(JSON.stringify(catState))});
@@ -1610,6 +1608,7 @@ function swImgIdxVariant(idx){
 }
 
 function showHome(){
+  history.replaceState(null, '', window.location.pathname);
   showPage('pg-home');
   setTimeout(function(){ initReveal(); }, 100);
 }
@@ -1657,6 +1656,7 @@ function openDetail(ri){
   document.getElementById('dfeats').innerHTML=fh;
   sessionStorage.setItem('lastProduct', ri);
   sessionStorage.setItem('navigated', '1');
+  history.replaceState(null, '', '#product-'+ri);
   showPage('pg-detail');
   renderRelated(ri);
   navPush({type:'detail', ri:ri});
@@ -1981,16 +1981,16 @@ function navBack(){
 
 window.addEventListener('popstate', function(e){
   var idx = e.state && e.state.idx !== undefined ? e.state.idx : 0;
-  // Truncate stack to this point
   if(idx < navStack.length - 1) navStack = navStack.slice(0, idx+1);
   var state = navStack[idx] || {type:'home'};
   if(state.type === 'home'){
+    history.replaceState(null, '', window.location.pathname);
     document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
     document.getElementById('pg-cat').classList.remove('on');
     document.getElementById('pg-home').classList.add('on');
-    sessionStorage.removeItem('currentPage');
     setTimeout(initReveal, 50);
   } else if(state.type === 'cat'){
+    history.replaceState(null, '', '#cat-'+(state.catState?state.catState.type:'all'));
     if(state.catState) catState = JSON.parse(JSON.stringify(state.catState));
     renderCatPage();
     document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
@@ -1999,8 +1999,8 @@ window.addEventListener('popstate', function(e){
     var ri = state.ri;
     var p = products[ri];
     if(p){
+      history.replaceState(null, '', '#product-'+ri);
       curP = ri;
-      // Re-render detail page content
       var badge=document.getElementById('dbadge');
       badge.textContent=p.brand; badge.style.background=bColors[p.brand]||'#333';
       document.getElementById('dname').textContent=p.name;
@@ -2010,13 +2010,13 @@ window.addEventListener('popstate', function(e){
       document.getElementById('dbtn').classList.remove('ok');
       renderVariants(p, 0);
       curImg=0;
-      if(p.images&&p.images.length){ setImg(0); var thArr=[];for(var i=0;i<p.images.length;i++){var tc=i===0?'dthumb on':'dthumb';thArr.push('<div class="'+tc+'" onclick="swImgIdx('+i+')"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');}document.getElementById('dthumbs').innerHTML=thArr.join('');updateArrows();}
+      if(p.images&&p.images.length){setImg(0);var thArr=[];for(var i=0;i<p.images.length;i++){var tc=i===0?'dthumb on':'dthumb';thArr.push('<div class="'+tc+'" onclick="swImgIdx('+i+')"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');}document.getElementById('dthumbs').innerHTML=thArr.join('');updateArrows();}
       else{document.getElementById('dmain').innerHTML='<span style="font-size:90px">'+p.icon+'</span>';document.getElementById('dthumbs').innerHTML='<div class="dthumb on" style="font-size:26px">'+p.icon+'</div>';document.getElementById('img-prev').classList.add('hidden');document.getElementById('img-next').classList.add('hidden');}
       var sh='<div class="dspecs"><div class="dspecs-t">Specifications</div>';for(var k in p.specs) sh+='<div class="srow"><span class="skey">'+k+'</span><span class="sval">'+p.specs[k]+'</span></div>';sh+='</div>';
       document.getElementById('dspecs').innerHTML=sh;
       var fh='<div class="dfeats"><div class="dfeats-t">Key Features</div>';for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';fh+='</div>';
       document.getElementById('dfeats').innerHTML=fh;
-      document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+      document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
       document.getElementById('pg-cat').classList.remove('on');
       document.getElementById('pg-detail').classList.add('on');
       renderRelated(ri);
@@ -2292,22 +2292,19 @@ fetch(API_URL + '/products')
     initStatsCounter();
     
     // Restore page on refresh
-    var savedPage = sessionStorage.getItem('currentPage');
-    var savedCat = sessionStorage.getItem('catState');
-    if(savedPage === 'cat' && savedCat){
-      try{ catState = JSON.parse(savedCat); }catch(e){}
+    // Restore page from URL hash on load/refresh
+    var hash = window.location.hash;
+    if(hash.indexOf('#product-') === 0){
+      var ri = parseInt(hash.replace('#product-', ''), 10);
+      if(!isNaN(ri) && products[ri]) openDetail(ri);
+    } else if(hash.indexOf('#cat-') === 0){
+      var catType = hash.replace('#cat-', '');
+      catState.type = catType;
       renderCatPage();
       showPage('pg-cat');
     } else {
-      // Only restore last product if navigated (not fresh browser refresh)
-      var _lp = sessionStorage.getItem('lastProduct');
-      var _nav = sessionStorage.getItem('navigated');
-      if(_lp !== null && _nav === '1'){ 
-        openDetail(parseInt(_lp, 10)); 
-      } else {
-        sessionStorage.removeItem('lastProduct');
-      }
-      sessionStorage.removeItem('navigated');
+      // Default homepage
+      window.location.hash = '';
     }
   })
   .catch(function(){
