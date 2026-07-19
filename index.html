@@ -1221,7 +1221,7 @@ var LOGO="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUA
 document.querySelectorAll('.logo').forEach(function(el){el.src=LOGO;});
 
 var products=[];
-var API_URL='https://whitefoxtraders-backend.onrender.com';
+var API_URL='https://whitefoxtraders-backend-production.up.railway.app';
 var cart=[],curP=null,fBrand='all',fCat='all',fPrice=null,fSort='def',fSearch='';
 var bColors={Anker:'#185FA5',Soundcore:'#0F6E56',UGreen:'#3B6D11'};
 var savedState=null;
@@ -1339,8 +1339,11 @@ function showPage(id){
   document.getElementById('pg-cat').classList.remove('on');
   if(id === 'pg-cat'){
     document.getElementById('pg-cat').classList.add('on');
+    sessionStorage.setItem('currentPage','cat');
+    sessionStorage.setItem('catState', JSON.stringify(catState));
   } else {
     document.getElementById(id).classList.add('on');
+    if(id === 'pg-home') sessionStorage.removeItem('currentPage');
   }
   window.scrollTo(0,0);
 }
@@ -1378,7 +1381,6 @@ function openCatPage(type){
   catState.search = null;
   var si = document.querySelector('.search-wrap input');
   if(si) si.value = '';
-  history.replaceState(null, '', '#cat-'+type);
   renderCatPage();
   showPage('pg-cat');
   navPush({type:'cat', catState: JSON.parse(JSON.stringify(catState))});
@@ -1608,7 +1610,6 @@ function swImgIdxVariant(idx){
 }
 
 function showHome(){
-  history.replaceState(null, '', window.location.pathname);
   showPage('pg-home');
   setTimeout(function(){ initReveal(); }, 100);
 }
@@ -1656,10 +1657,10 @@ function openDetail(ri){
   document.getElementById('dfeats').innerHTML=fh;
   sessionStorage.setItem('lastProduct', ri);
   sessionStorage.setItem('navigated', '1');
-  history.replaceState(null, '', '#product-'+ri);
+  history.pushState({idx: navStack.length}, '', '#product-'+ri);
+  navStack.push({type:'detail', ri:ri});
   showPage('pg-detail');
   renderRelated(ri);
-  navPush({type:'detail', ri:ri});
 }
 
 var curImg=0;
@@ -1980,26 +1981,11 @@ function navBack(){
 }
 
 window.addEventListener('popstate', function(e){
-  var idx = e.state && e.state.idx !== undefined ? e.state.idx : 0;
-  if(idx < navStack.length - 1) navStack = navStack.slice(0, idx+1);
-  var state = navStack[idx] || {type:'home'};
-  if(state.type === 'home'){
-    history.replaceState(null, '', window.location.pathname);
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('pg-cat').classList.remove('on');
-    document.getElementById('pg-home').classList.add('on');
-    setTimeout(initReveal, 50);
-  } else if(state.type === 'cat'){
-    history.replaceState(null, '', '#cat-'+(state.catState?state.catState.type:'all'));
-    if(state.catState) catState = JSON.parse(JSON.stringify(state.catState));
-    renderCatPage();
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('pg-cat').classList.add('on');
-  } else if(state.type === 'detail'){
-    var ri = state.ri;
-    var p = products[ri];
-    if(p){
-      history.replaceState(null, '', '#product-'+ri);
+  var hash = window.location.hash;
+  if(hash.indexOf('#product-') === 0){
+    var ri = parseInt(hash.replace('#product-', ''), 10);
+    if(!isNaN(ri) && products[ri]){
+      var p = products[ri];
       curP = ri;
       var badge=document.getElementById('dbadge');
       badge.textContent=p.brand; badge.style.background=bColors[p.brand]||'#333';
@@ -2016,14 +2002,28 @@ window.addEventListener('popstate', function(e){
       document.getElementById('dspecs').innerHTML=sh;
       var fh='<div class="dfeats"><div class="dfeats-t">Key Features</div>';for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';fh+='</div>';
       document.getElementById('dfeats').innerHTML=fh;
+      sessionStorage.setItem('lastProduct', ri);
       document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
       document.getElementById('pg-cat').classList.remove('on');
       document.getElementById('pg-detail').classList.add('on');
       renderRelated(ri);
     }
+  } else if(hash.indexOf('#cat-') === 0){
+    var catType = hash.replace('#cat-', '');
+    catState.type = catType;
+    renderCatPage();
+    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('pg-cat').classList.add('on');
+  } else {
+    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('pg-cat').classList.remove('on');
+    document.getElementById('pg-home').classList.add('on');
+    sessionStorage.removeItem('lastProduct');
+    setTimeout(initReveal, 50);
   }
   window.scrollTo(0,0);
 });
+
 
 function mapProduct(p) {
   var cat = p.cat || '';
@@ -2290,20 +2290,28 @@ fetch(API_URL + '/products')
     renderFeatured();
     initReveal();
     initStatsCounter();
-
-    // Restore page from URL hash on refresh
-    var hash = window.location.hash;
-    if(hash.indexOf('#product-') === 0){
-      var ri = parseInt(hash.replace('#product-', ''), 10);
-      if(!isNaN(ri) && products[ri]) openDetail(ri);
-    } else if(hash.indexOf('#cat-') === 0){
-      var catType = hash.replace('#cat-', '');
-      catState.type = catType;
+    
+    // Restore page on refresh
+    var savedPage = sessionStorage.getItem('currentPage');
+    var savedCat = sessionStorage.getItem('catState');
+    if(savedPage === 'cat' && savedCat){
+      try{ catState = JSON.parse(savedCat); }catch(e){}
       renderCatPage();
       showPage('pg-cat');
+    } else {
+      // Only restore last product if navigated (not fresh browser refresh)
+      var _lp = sessionStorage.getItem('lastProduct');
+      var _nav = sessionStorage.getItem('navigated');
+      if(_lp !== null && _nav === '1'){ 
+        openDetail(parseInt(_lp, 10)); 
+      } else {
+        sessionStorage.removeItem('lastProduct');
+      }
+      sessionStorage.removeItem('navigated');
     }
   })
   .catch(function(){
+    // Fallback: show empty state if API fails
     render();
   });
 </script>
