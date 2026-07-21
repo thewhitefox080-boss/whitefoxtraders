@@ -1614,11 +1614,11 @@ function showHome(){
   setTimeout(function(){ initReveal(); }, 100);
 }
 
-function openDetail(ri){
-  prevPage = document.getElementById('pg-cat').classList.contains('on') ? 'cat' : 'home';
-  saveFilterState();
+// Renders the product detail UI for a given product index. Pure UI update —
+// does NOT touch history/navStack, so it's safe to call from popstate too.
+function renderDetailUI(ri){
   var p=products[ri];
-  if(!p) return;
+  if(!p) return false;
   curP=ri;
   var badge=document.getElementById('dbadge');
   badge.textContent=p.brand;
@@ -1656,11 +1656,17 @@ function openDetail(ri){
   fh+='</div>';
   document.getElementById('dfeats').innerHTML=fh;
   sessionStorage.setItem('lastProduct', ri);
-  sessionStorage.setItem('navigated', '1');
-  history.pushState({idx: navStack.length}, '', '#product-'+ri);
-  navStack.push({type:'detail', ri:ri});
-  showPage('pg-detail');
   renderRelated(ri);
+  return true;
+}
+
+function openDetail(ri){
+  prevPage = document.getElementById('pg-cat').classList.contains('on') ? 'cat' : 'home';
+  saveFilterState();
+  if(!renderDetailUI(ri)) return;
+  sessionStorage.setItem('navigated', '1');
+  navPush({type:'detail', ri:ri}, '#product-'+ri);
+  showPage('pg-detail');
 }
 
 var curImg=0;
@@ -1961,67 +1967,60 @@ function resetAll(){
   goHome();
 }
 
-// Navigation stack for browser back button
+// Navigation stack for browser back button.
+// Each entry is a full snapshot: {type:'home'} | {type:'cat', catState:{...}} | {type:'detail', ri:N}
+// The snapshot is stored both in navStack (for the in-app back button/guard) AND as the
+// history entry's state object (via pushState), so popstate can restore the exact page —
+// including category filters — instead of re-deriving it from the URL hash alone.
 var navStack = [{type:'home'}];
-history.replaceState({idx:0}, '', '');
+history.replaceState({type:'home'}, '', '');
 
-function navPush(state){
+// Builds a human-readable / shareable hash for a nav state (cosmetic — actual restore uses state)
+function navHash(state){
+  if(state.type === 'detail') return '#product-'+state.ri;
+  if(state.type === 'cat'){
+    if(state.catState && state.catState.search) return '#search-'+encodeURIComponent(state.catState.search);
+    return '#cat-'+(state.catState ? state.catState.type : 'all');
+  }
+  return '';
+}
+
+function navPush(state, hash){
   navStack.push(state);
-  history.pushState({idx: navStack.length-1}, '', '');
+  history.pushState(state, '', hash !== undefined ? hash : navHash(state));
 }
 
 // Site back button — go to previous in stack
 function navBack(){
   if(navStack.length > 1){
-    navStack.pop();
-    history.back(); // triggers popstate which restores previous state
+    history.back(); // triggers popstate, which pops navStack and restores previous state
   } else {
     showHome();
   }
 }
 
-window.addEventListener('popstate', function(e){
-  var hash = window.location.hash;
-  if(hash.indexOf('#product-') === 0){
-    var ri = parseInt(hash.replace('#product-', ''), 10);
-    if(!isNaN(ri) && products[ri]){
-      var p = products[ri];
-      curP = ri;
-      var badge=document.getElementById('dbadge');
-      badge.textContent=p.brand; badge.style.background=bColors[p.brand]||'#333';
-      document.getElementById('dname').textContent=p.name;
-      document.getElementById('dprice').textContent=fmt(p.price);
-      document.getElementById('ddesc').textContent=p.desc;
-      document.getElementById('dbtn').textContent='Add to bag';
-      document.getElementById('dbtn').classList.remove('ok');
-      renderVariants(p, 0);
-      curImg=0;
-      if(p.images&&p.images.length){setImg(0);var thArr=[];for(var i=0;i<p.images.length;i++){var tc=i===0?'dthumb on':'dthumb';thArr.push('<div class="'+tc+'" onclick="swImgIdx('+i+')"><img src="'+p.images[i]+'" alt="v'+i+'"/></div>');}document.getElementById('dthumbs').innerHTML=thArr.join('');updateArrows();}
-      else{document.getElementById('dmain').innerHTML='<span style="font-size:90px">'+p.icon+'</span>';document.getElementById('dthumbs').innerHTML='<div class="dthumb on" style="font-size:26px">'+p.icon+'</div>';document.getElementById('img-prev').classList.add('hidden');document.getElementById('img-next').classList.add('hidden');}
-      var sh='<div class="dspecs"><div class="dspecs-t">Specifications</div>';for(var k in p.specs) sh+='<div class="srow"><span class="skey">'+k+'</span><span class="sval">'+p.specs[k]+'</span></div>';sh+='</div>';
-      document.getElementById('dspecs').innerHTML=sh;
-      var fh='<div class="dfeats"><div class="dfeats-t">Key Features</div>';for(var j=0;j<p.features.length;j++) fh+='<div class="feat"><span class="fdot"></span>'+p.features[j]+'</div>';fh+='</div>';
-      document.getElementById('dfeats').innerHTML=fh;
-      sessionStorage.setItem('lastProduct', ri);
-      document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
-      document.getElementById('pg-cat').classList.remove('on');
-      document.getElementById('pg-detail').classList.add('on');
-      renderRelated(ri);
-    }
-  } else if(hash.indexOf('#cat-') === 0){
-    var catType = hash.replace('#cat-', '');
-    catState.type = catType;
+function restoreNavState(state){
+  document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
+  if(state && state.type === 'detail' && renderDetailUI(state.ri)){
+    document.getElementById('pg-detail').classList.add('on');
+  } else if(state && state.type === 'cat' && state.catState){
+    catState = state.catState;
     renderCatPage();
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
     document.getElementById('pg-cat').classList.add('on');
+    sessionStorage.setItem('currentPage', 'cat');
+    sessionStorage.setItem('catState', JSON.stringify(catState));
   } else {
-    document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-    document.getElementById('pg-cat').classList.remove('on');
     document.getElementById('pg-home').classList.add('on');
     sessionStorage.removeItem('lastProduct');
+    sessionStorage.removeItem('currentPage');
     setTimeout(initReveal, 50);
   }
   window.scrollTo(0,0);
+}
+
+window.addEventListener('popstate', function(e){
+  if(navStack.length > 1) navStack.pop();
+  restoreNavState(e.state);
 });
 
 
@@ -2291,6 +2290,38 @@ fetch(API_URL + '/products')
     initReveal();
     initStatsCounter();
     
+    // Deep link support: if the URL was opened/shared with a hash, honor it first.
+    var initHash = window.location.hash;
+    if(initHash.indexOf('#product-') === 0){
+      var _dri = parseInt(initHash.replace('#product-',''), 10);
+      if(!isNaN(_dri) && products[_dri]){
+        var _dstate = {type:'detail', ri:_dri};
+        renderDetailUI(_dri);
+        document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
+        document.getElementById('pg-detail').classList.add('on');
+        history.replaceState(_dstate, '', initHash);
+        navStack = [{type:'home'}, _dstate];
+        return;
+      }
+    } else if(initHash.indexOf('#cat-') === 0 || initHash.indexOf('#search-') === 0){
+      var _isSearch = initHash.indexOf('#search-') === 0;
+      var _cVal = _isSearch ? decodeURIComponent(initHash.replace('#search-','')) : initHash.replace('#cat-','');
+      if(_isSearch){
+        catState.type='all'; catState.subCat=null; catState.brand='all';
+        catState.price=null; catState.sort='def'; catState.visible=12; catState.search=_cVal;
+      } else if(catConfig[_cVal]){
+        catState.type=_cVal; catState.subCat=null; catState.brand='all';
+        catState.price=null; catState.sort='def'; catState.visible=12; catState.search=null;
+      }
+      var _cstate = {type:'cat', catState: JSON.parse(JSON.stringify(catState))};
+      renderCatPage();
+      document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
+      document.getElementById('pg-cat').classList.add('on');
+      history.replaceState(_cstate, '', initHash);
+      navStack = [{type:'home'}, _cstate];
+      return;
+    }
+
     // Restore page on refresh
     var savedPage = sessionStorage.getItem('currentPage');
     var savedCat = sessionStorage.getItem('catState');
@@ -2298,6 +2329,8 @@ fetch(API_URL + '/products')
       try{ catState = JSON.parse(savedCat); }catch(e){}
       renderCatPage();
       showPage('pg-cat');
+      history.replaceState({type:'cat', catState: JSON.parse(JSON.stringify(catState))}, '', navHash({type:'cat', catState:catState}));
+      navStack = [{type:'home'}, {type:'cat', catState: JSON.parse(JSON.stringify(catState))}];
     } else {
       // Only restore last product if navigated (not fresh browser refresh)
       var _lp = sessionStorage.getItem('lastProduct');
