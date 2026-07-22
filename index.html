@@ -119,15 +119,28 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .hbrand-ct{font-size:11px;color:var(--g3)}
 /* TRUST */
 .trust-sec{display:grid;grid-template-columns:1.6fr 1fr;min-height:60vh}
-.trust-left{background:var(--g1);color:var(--black);padding:64px 56px;display:flex;flex-direction:column;justify-content:center}
+.trust-left{background:var(--g2);color:var(--black);padding:64px 56px;display:flex;flex-direction:column;justify-content:center}
 .trust-h2{font-size:44px;font-weight:700;line-height:1.08;letter-spacing:-1.5px;margin-bottom:18px}
 .trust-sub{font-size:16px;color:var(--g4);max-width:400px;line-height:1.6}
 .trust-right{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;background:var(--g2)}
-.trust-box{background:#dcdce1;color:var(--black);padding:32px 34px;display:flex;align-items:center;gap:20px}
+.trust-box{background:#d0d0d7;color:var(--black);padding:34px 36px;display:flex;align-items:center;gap:22px;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),background 0.35s}
+.trust-box:hover{transform:translateY(-5px);background:#c8c8d0;box-shadow:0 14px 30px rgba(0,0,0,0.1)}
 .trust-box.wide{grid-column:1/-1}
-.trust-ic{width:54px;height:54px;border-radius:14px;background:rgba(0,113,227,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
-.trust-box b{display:block;font-size:17px;font-weight:700;margin-bottom:5px;color:var(--black)}
-.trust-box span{font-size:13.5px;color:var(--g4);line-height:1.5}
+.trust-ic{width:58px;height:58px;border-radius:15px;background:rgba(0,113,227,0.14);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.trust-ic svg{width:27px;height:27px}
+.trust-box b{display:block;font-size:18.5px;font-weight:700;margin-bottom:5px;color:var(--black)}
+.trust-box span{font-size:14.5px;color:var(--g4);line-height:1.5}
+
+/* TRUST BAR (icon strip) */
+.trust-bar{background:var(--white);padding:56px 32px;border-top:0.5px solid var(--g2)}
+.trust-bar-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
+.tbar-item{display:flex;align-items:flex-start;gap:16px;transition:transform 0.3s cubic-bezier(0.22,1,0.36,1)}
+.tbar-item:hover{transform:translateY(-4px)}
+.tbar-item:hover .tbar-ic{background:var(--black);color:#fff}
+.tbar-ic{width:46px;height:46px;border-radius:13px;background:var(--g1);color:var(--black);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.3s,color 0.3s}
+.tbar-ic svg{width:22px;height:22px}
+.tbar-item b{display:block;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px}
+.tbar-item span{font-size:13.5px;color:var(--g4);line-height:1.45}
 /* CATS */
 .cats{display:flex;overflow-x:auto;padding:0 32px;scrollbar-width:none;border-bottom:0.5px solid var(--g2);background:#fff;position:sticky;top:52px;z-index:100}
 .cats::-webkit-scrollbar{display:none}
@@ -509,6 +522,8 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   .trust-h2{font-size:32px}
   .trust-right{grid-template-columns:1fr;grid-template-rows:auto}
   .trust-box{padding:24px}
+  .trust-bar-inner{grid-template-columns:1fr 1fr;gap:28px 20px}
+  .trust-bar{padding:40px 24px}
 
   /* CATEGORY BAR */
   .cats{padding:0 12px}
@@ -701,20 +716,42 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
       <p class="trust-sub">Nepal's authorized reseller for Anker, Soundcore &amp; UGreen — every order backed by genuine products, fast delivery, and real warranty support.</p>
     </div>
     <div class="trust-right">
-      <div class="trust-box wide">
-        <div class="trust-ic">✓</div>
+      <div class="trust-box wide reveal">
+        <div class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7.5 4.3v9.4L12 20l-7.5-4.3V6.3z"/><path d="M8.5 9.5l3.5 2 3.5-2M12 11.5V16"/></svg></div>
         <div><b>Genuine or refunded</b><span>100% authentic Anker, Soundcore &amp; UGreen — every time.</span></div>
       </div>
-      <div class="trust-box">
-        <div class="trust-ic">📦</div>
+      <div class="trust-box reveal reveal-delay-1">
+        <div class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V7a1 1 0 0 1 1-1h9v10"/><path d="M13 10h4l3 3v3h-2"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg></div>
         <div><b>Delivered in days, not weeks</b><span>2–3 day delivery across Nepal.</span></div>
       </div>
-      <div class="trust-box">
-        <div class="trust-ic">🛡️</div>
+      <div class="trust-box reveal reveal-delay-2">
+        <div class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.4-3 7.7-7 9.5-4-1.8-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
         <div><b>Covered for up to 2 years</b><span>Real warranty support, no fine print.</span></div>
       </div>
     </div>
 
+  </div>
+
+  <!-- TRUST BAR (icon strip) -->
+  <div class="trust-bar">
+    <div class="trust-bar-inner">
+      <div class="tbar-item reveal">
+        <div class="tbar-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V7a1 1 0 0 1 1-1h9v10"/><path d="M13 10h4l3 3v3h-2"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg></div>
+        <div><b>Nationwide delivery</b><span>2–3 days, all across Nepal</span></div>
+      </div>
+      <div class="tbar-item reveal reveal-delay-1">
+        <div class="tbar-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-4-.98L3 20l1.02-4.5A8.4 8.4 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg></div>
+        <div><b>Real-time support</b><span>Reach us on WhatsApp or call, anytime</span></div>
+      </div>
+      <div class="tbar-item reveal reveal-delay-2">
+        <div class="tbar-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.4-3 7.7-7 9.5-4-1.8-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div><b>Authorized reseller</b><span>Verified genuine, every order</span></div>
+      </div>
+      <div class="tbar-item reveal reveal-delay-3">
+        <div class="tbar-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        <div><b>Secure payment</b><span>eSewa, FonePay &amp; COD</span></div>
+      </div>
+    </div>
   </div>
 
   <!-- HERO BANNER SLIDER -->
