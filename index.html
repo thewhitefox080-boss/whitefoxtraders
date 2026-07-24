@@ -1909,7 +1909,7 @@ function addCart(ri,btn){
   var ex=null;
   for(var i=0;i<cart.length;i++){if(cart[i].ri===ri){ex=cart[i];break;}}
   if(ex) ex.qty++;
-  else cart.push({ri:ri,name:p.name,price:p.price,icon:p.icon,qty:1});
+  else cart.push({ri:ri,id:p.id,name:p.name,price:p.price,icon:p.icon,qty:1});
   updateBadge();
   btn.textContent='✓';btn.classList.add('ok');
   setTimeout(function(){btn.textContent=btn.id==='dbtn'?'Add to bag':'+';btn.classList.remove('ok');},900);
@@ -2025,7 +2025,7 @@ function placeOrder(){
       document.getElementById('co-pg').classList.remove('on');
       document.getElementById('succ-pg').classList.add('on');
     } else {
-      alert('Something went wrong. Please try again.');
+      alert(data.error || 'Something went wrong. Please try again.');
     }
   })
   .catch(function(){
