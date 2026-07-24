@@ -197,8 +197,8 @@ tr:hover td{background:#fafafa}
       <input class="prod-search" type="text" placeholder="Search products..." oninput="filterProds(this.value)"/>
       <div class="prod-table-wrap">
         <table>
-          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Edit</th><th>Delete</th></tr></thead>
-          <tbody id="products-tbody"><tr><td colspan="8" class="loading">Loading products...</td></tr></tbody>
+          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>Qty</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Edit</th><th>Delete</th></tr></thead>
+          <tbody id="products-tbody"><tr><td colspan="9" class="loading">Loading products...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -224,6 +224,7 @@ tr:hover td{background:#fafafa}
         <div><label>In Stock</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ap-stock" checked/><span class="toggle-slider"></span></label></div>
         <div><label>New Arrival</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ap-new"/><span class="toggle-slider"></span></label></div>
       </div>
+      <div class="form-group"><label>Stock Quantity (optional)</label><input type="number" min="0" id="ap-qty" placeholder="Leave blank for unlimited/untracked"/><div class="form-hint">If set, this auto-decreases with each order and blocks overselling. Leave blank to keep it simple (just use the In Stock toggle).</div></div>
     </div>
     <div class="form-group"><label>Description</label><textarea id="ap-desc" placeholder="Short product description..."></textarea></div>
     <div class="form-section-label">Images (Cloudinary URLs)</div>
@@ -263,6 +264,7 @@ tr:hover td{background:#fafafa}
         <div><label>In Stock</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ep-stock"/><span class="toggle-slider"></span></label></div>
         <div><label>New Arrival</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ep-new"/><span class="toggle-slider"></span></label></div>
       </div>
+      <div class="form-group"><label>Stock Quantity (optional)</label><input type="number" min="0" id="ep-qty" placeholder="Leave blank for unlimited/untracked"/><div class="form-hint">If set, this auto-decreases with each order and blocks overselling. Leave blank to keep it simple (just use the In Stock toggle).</div></div>
     </div>
     <div class="form-group"><label>Description</label><textarea id="ep-desc"></textarea></div>
     <div class="form-section-label">Images (Cloudinary URLs)</div>
@@ -421,7 +423,7 @@ function updateOrderStatus(id, status){
 
 /* ---- PRODUCTS ---- */
 function loadProducts(){
-  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="8" class="loading">Loading products...</td></tr>';
+  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="9" class="loading">Loading products...</td></tr>';
   fetch(API_URL+'/admin/products', {headers:{'Authorization':'Bearer '+authToken}})
   .then(function(r){ if(r.status===401){doLogout();return null;} return r.json(); })
   .then(function(data){
@@ -430,7 +432,7 @@ function loadProducts(){
     renderProducts(allProducts);
   })
   .catch(function(){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="8" class="empty">Could not load products.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="9" class="empty">Could not load products.</td></tr>';
   });
 }
 
@@ -442,7 +444,7 @@ function filterProds(val){
 
 function renderProducts(list){
   if(!list.length){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="8" class="empty">No products found.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="9" class="empty">No products found.</td></tr>';
     return;
   }
   var h='';
@@ -453,6 +455,7 @@ function renderProducts(list){
     h+='<td><div style="display:flex;align-items:center;gap:12px">'+img+'<div><div class="prod-name">'+p.name+'</div><div class="prod-brand">'+p.brand+'</div></div></div></td>';
     h+='<td><span class="prod-cat">'+p.cat+'</span></td>';
     h+='<td><input class="price-inp" type="number" value="'+p.price+'" id="price-'+p.id+'"/></td>';
+    h+='<td><input class="price-inp" type="number" min="0" placeholder="∞" style="width:70px" value="'+(p.stock_qty===null||p.stock_qty===undefined?'':p.stock_qty)+'" id="qty-'+p.id+'" title="Leave blank for unlimited/untracked stock"/></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.in_stock?' checked':'')+' id="stock-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.is_new?' checked':'')+' id="new-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><button class="save-btn" onclick="saveProduct('+p.id+',this)">Save</button><span class="saved-flash" id="flash-'+p.id+'">Saved ✓</span></td>';
@@ -465,14 +468,17 @@ function renderProducts(list){
 
 function saveProduct(id, btn){
   var price = parseInt(document.getElementById('price-'+id).value);
+  var qtyRaw = document.getElementById('qty-'+id).value.trim();
+  var stockQty = qtyRaw === '' ? null : parseInt(qtyRaw, 10);
   var inStock = document.getElementById('stock-'+id).checked;
   var isNew = document.getElementById('new-'+id).checked;
   if(isNaN(price) || price < 0){ alert('Invalid price.'); return; }
+  if(stockQty !== null && (isNaN(stockQty) || stockQty < 0)){ alert('Invalid quantity — leave blank for unlimited/untracked stock.'); return; }
   btn.disabled = true;
   btn.textContent = '...';
   fetch(API_URL+'/admin/products/'+id, {
     method:'PATCH', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body: JSON.stringify({price:price, in_stock:inStock, is_new:isNew})
+    body: JSON.stringify({price:price, in_stock:inStock, is_new:isNew, stock_qty:stockQty})
   })
   .then(function(r){return r.json();})
   .then(function(data){
@@ -482,7 +488,7 @@ function saveProduct(id, btn){
       var flash = document.getElementById('flash-'+id);
       flash.style.display = 'inline';
       setTimeout(function(){ flash.style.display='none'; }, 2000);
-      for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ allProducts[i].price=price; allProducts[i].in_stock=inStock; allProducts[i].is_new=isNew; }
+      for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ allProducts[i].price=price; allProducts[i].in_stock=inStock; allProducts[i].is_new=isNew; allProducts[i].stock_qty=stockQty; }
     } else { alert('Failed to save.'); }
   })
   .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
@@ -543,7 +549,7 @@ function openAddModal(){
 }
 function closeAddModal(){
   document.getElementById('add-modal').classList.remove('on');
-  ['ap-name','ap-brand','ap-price','ap-icon','ap-desc'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['ap-name','ap-brand','ap-price','ap-icon','ap-desc','ap-qty'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('ap-cat').value='';
   document.getElementById('ap-cat-custom').style.display='none';
   document.getElementById('ap-cat-custom').value='';
@@ -620,11 +626,14 @@ function submitNewProduct(){
   var brand=document.getElementById('ap-brand').value.trim();
   var cat=getCategory('ap-cat','ap-cat-custom');
   var price=parseInt(document.getElementById('ap-price').value);
+  var qtyRaw=document.getElementById('ap-qty').value.trim();
+  var stockQty=qtyRaw===''?null:parseInt(qtyRaw,10);
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
+  if(stockQty!==null && (isNaN(stockQty)||stockQty<0)){ alert('Invalid stock quantity — leave blank for unlimited/untracked.'); return; }
   var btn=document.getElementById('ap-submit'); btn.disabled=true; btn.textContent='Adding...';
   fetch(API_URL+'/admin/products',{
     method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list'),variants:getVariants('ap-variants-list')})
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,stock_qty:stockQty,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list'),variants:getVariants('ap-variants-list')})
   })
   .then(function(r){return r.json();})
   .then(function(data){
@@ -655,6 +664,7 @@ function openEditModal(id){
     epCatCustom.value = '';
   }
   document.getElementById('ep-price').value=p.price||0;
+  document.getElementById('ep-qty').value=(p.stock_qty===null||p.stock_qty===undefined)?'':p.stock_qty;
   document.getElementById('ep-icon').value=p.icon||'';
   document.getElementById('ep-desc').value=p.description||'';
   document.getElementById('ep-stock').checked=p.in_stock;
@@ -689,11 +699,14 @@ function submitEditProduct(){
   var brand=document.getElementById('ep-brand').value.trim();
   var cat=getCategory('ep-cat','ep-cat-custom');
   var price=parseInt(document.getElementById('ep-price').value);
+  var qtyRaw=document.getElementById('ep-qty').value.trim();
+  var stockQty=qtyRaw===''?null:parseInt(qtyRaw,10);
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
+  if(stockQty!==null && (isNaN(stockQty)||stockQty<0)){ alert('Invalid stock quantity — leave blank for unlimited/untracked.'); return; }
   var btn=document.getElementById('ep-submit'); btn.disabled=true; btn.textContent='Saving...';
   fetch(API_URL+'/admin/products/'+editingId,{
     method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list'),variants:getVariants('ep-variants-list')})
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,stock_qty:stockQty,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list'),variants:getVariants('ep-variants-list')})
   })
   .then(function(r){return r.json();})
   .then(function(data){
