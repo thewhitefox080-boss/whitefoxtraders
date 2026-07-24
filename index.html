@@ -1990,6 +1990,7 @@ function selPay(m){
 function placeOrder(){
   var name = document.getElementById('co-name').value.trim();
   var phone = document.getElementById('co-phone').value.trim();
+  var email = document.getElementById('co-email').value.trim();
   var address = document.getElementById('co-address').value.trim();
   var city = document.getElementById('co-city').value.trim();
   var district = document.getElementById('co-district').value;
@@ -2006,6 +2007,7 @@ function placeOrder(){
   var orderData = {
     name: name,
     phone: phone,
+    email: email || null,
     address: address,
     city: city,
     district: district,
