@@ -380,6 +380,8 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 .ddesc{font-size:15px;color:var(--g4);line-height:1.7;margin-bottom:24px;font-weight:300}
 .dbtns{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap}
 .btn-add{background:var(--black);color:#fff;border:none;padding:13px 28px;border-radius:100px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;flex:1;transition:opacity 0.2s}
+.btn-add:disabled{background:var(--g3);cursor:not-allowed;opacity:0.7}
+.doos-badge{display:inline-block;background:#fdeaea;color:#c0392b;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:100px;margin-bottom:14px}
 .btn-add:hover{opacity:0.85}
 .btn-add.ok{background:#28a745}
 .btn-out{background:transparent;color:var(--black);border:1.5px solid var(--g2);padding:11px 22px;border-radius:100px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:border-color 0.2s}
@@ -917,6 +919,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
         <span class="dbadge" id="dbadge"></span>
         <h1 class="dname" id="dname"></h1>
         <div class="dprice" id="dprice"></div>
+        <div class="doos-badge" id="doos-badge" style="display:none">Currently out of stock</div>
         <div class="dprice-sub">Free delivery across Nepal · Genuine warranty</div>
         <p class="ddesc" id="ddesc"></p>
         <div id="dvariants"></div>
@@ -1700,6 +1703,10 @@ function renderDetailUI(ri){
   document.getElementById('ddesc').textContent=p.desc;
   document.getElementById('dbtn').textContent='Add to bag';
   document.getElementById('dbtn').classList.remove('ok');
+  document.getElementById('dbtn').disabled=false;
+  document.getElementById('doos-badge').style.display='none';
+  if(p.inStock===false){ markDetailOutOfStock(); }
+  else { checkLiveStock(ri, p.id); }
   renderVariants(p, 0);
   var main=document.getElementById('dmain');
   var thumbs=document.getElementById('dthumbs');
@@ -1730,6 +1737,32 @@ function renderDetailUI(ri){
   sessionStorage.setItem('lastProduct', ri);
   renderRelated(ri);
   return true;
+}
+
+// Checks current stock fresh from the server (rather than trusting the possibly-stale
+// product list fetched at page load) and updates the detail page if it's since sold out.
+function checkLiveStock(ri, id){
+  fetch(API_URL + '/products/stock-check', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ids:[id]})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var info = data[id];
+    if(!info) return; // couldn't verify — don't block a purchase on a network hiccup
+    var available = info.in_stock && (info.stock_qty === null || info.stock_qty > 0);
+    if(products[ri]) products[ri].inStock = available;
+    if(!available && curP === ri){ markDetailOutOfStock(); }
+  })
+  .catch(function(){}); // fail silently — a stock-check failure shouldn't block browsing
+}
+
+function markDetailOutOfStock(){
+  var btn = document.getElementById('dbtn');
+  btn.textContent = 'Out of stock';
+  btn.disabled = true;
+  document.getElementById('doos-badge').style.display = 'inline-block';
 }
 
 function openDetail(ri){
@@ -1909,7 +1942,7 @@ function addCart(ri,btn){
   var ex=null;
   for(var i=0;i<cart.length;i++){if(cart[i].ri===ri){ex=cart[i];break;}}
   if(ex) ex.qty++;
-  else cart.push({ri:ri,id:p.id,name:p.name,price:p.price,icon:p.icon,qty:1});
+  else cart.push({ri:ri,id:p.id,name:p.name,brand:p.brand,price:p.price,icon:p.icon,images:p.images,qty:1});
   updateBadge();
   btn.textContent='✓';btn.classList.add('ok');
   setTimeout(function(){btn.textContent=btn.id==='dbtn'?'Add to bag':'+';btn.classList.remove('ok');},900);
@@ -1952,7 +1985,54 @@ function renderCart(){
 function chQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);updateBadge();renderCart();}
 function delItem(i){cart.splice(i,1);updateBadge();renderCart();}
 
-function openCheckout(){closeCart();document.getElementById('co-pg').classList.add('on');renderSum();}
+function openCheckout(){
+  if(cart.length === 0){ closeCart(); return; }
+  var ids = [];
+  for(var i=0;i<cart.length;i++){ if(cart[i].id) ids.push(cart[i].id); }
+  if(ids.length === 0){
+    closeCart();
+    document.getElementById('co-pg').classList.add('on');
+    renderSum();
+    return;
+  }
+  fetch(API_URL + '/products/stock-check', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ids:ids})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var changes = [];
+    for(var i=cart.length-1;i>=0;i--){
+      var item = cart[i];
+      var info = data[item.id];
+      if(!info) continue; // couldn't verify this one — leave it, final checkout still double-checks
+      var available = info.in_stock ? (info.stock_qty === null ? Infinity : info.stock_qty) : 0;
+      if(available <= 0){
+        changes.push('"' + item.name + '" sold out and was removed from your bag.');
+        cart.splice(i,1);
+      } else if(item.qty > available){
+        changes.push('Only ' + available + ' of "' + item.name + '" left — quantity updated in your bag.');
+        item.qty = available;
+      }
+    }
+    if(changes.length){
+      updateBadge();
+      renderCart();
+      alert(changes.join('\n'));
+    }
+    if(cart.length === 0){ openCart(); return; }
+    closeCart();
+    document.getElementById('co-pg').classList.add('on');
+    renderSum();
+  })
+  .catch(function(){
+    // Couldn't verify — proceed anyway, final submission still checks server-side
+    closeCart();
+    document.getElementById('co-pg').classList.add('on');
+    renderSum();
+  });
+}
 function closeCheckout(){document.getElementById('co-pg').classList.remove('on');openCart();}
 
 function renderSum(){
