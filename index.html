@@ -1709,6 +1709,7 @@ function swImgIdxVariant(idx){
 }
 
 function showHome(){
+  navPush({type:'home'}, '');
   showPage('pg-home');
   setTimeout(function(){ initReveal(); }, 100);
 }
@@ -2026,6 +2027,7 @@ function openCheckout(){
   for(var i=0;i<cart.length;i++){ if(cart[i].id) ids.push(cart[i].id); }
   if(ids.length === 0){
     closeCart();
+    navPush({type:'checkout'}, '#checkout');
     document.getElementById('co-pg').classList.add('on');
     renderSum();
     return;
@@ -2058,17 +2060,19 @@ function openCheckout(){
     }
     if(cart.length === 0){ openCart(); return; }
     closeCart();
+    navPush({type:'checkout'}, '#checkout');
     document.getElementById('co-pg').classList.add('on');
     renderSum();
   })
   .catch(function(){
     // Couldn't verify — proceed anyway, final submission still checks server-side
     closeCart();
+    navPush({type:'checkout'}, '#checkout');
     document.getElementById('co-pg').classList.add('on');
     renderSum();
   });
 }
-function closeCheckout(){document.getElementById('co-pg').classList.remove('on');openCart();}
+function closeCheckout(){ navBack(); }
 
 function renderSum(){
   var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
@@ -2188,7 +2192,21 @@ function navBack(){
   }
 }
 
+var lastPushedState = {type:'home'}; // tracks what was active before this restore, to detect leaving checkout
+
 function restoreNavState(state){
+  var cameFromCheckout = lastPushedState && lastPushedState.type === 'checkout';
+  lastPushedState = state;
+  document.getElementById('succ-pg').classList.remove('on');
+
+  if(state && state.type === 'checkout'){
+    document.getElementById('co-pg').classList.add('on');
+    renderSum();
+    window.scrollTo(0,0);
+    return;
+  }
+  document.getElementById('co-pg').classList.remove('on');
+
   document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
   if(state && state.type === 'detail' && renderDetailUI(state.ri)){
     document.getElementById('pg-detail').classList.add('on');
@@ -2204,6 +2222,7 @@ function restoreNavState(state){
     sessionStorage.removeItem('currentPage');
     setTimeout(initReveal, 50);
   }
+  if(cameFromCheckout) openCart();
   window.scrollTo(0,0);
 }
 
