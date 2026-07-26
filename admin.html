@@ -289,6 +289,17 @@ tr:hover td{background:#fafafa}
 <script>
 var API_URL = 'https://whitefoxtraders-backend.onrender.com';
 var authToken = null;
+
+// Customer-submitted fields (name, phone, address, city, district) are free text with
+// no character restrictions at checkout. They must NEVER go into innerHTML unescaped —
+// a malicious "name" like <img src=x onerror=...> would execute in the admin's
+// authenticated session the moment this orders table renders. Always route through this.
+function escapeHtml(str){
+  if(str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
 var allOrders = [];
 var allProducts = [];
 var currentFilter = 'all';
@@ -386,16 +397,16 @@ function renderOrders(){
     var o=filtered[i];
     var pc=o.payment_method==='eSewa'?'pay-esewa':o.payment_method==='FonePay'?'pay-fonepay':'pay-cod';
     var items='';
-    if(o.items&&o.items.length) for(var j=0;j<o.items.length;j++) items+=o.items[j].name+' x'+o.items[j].qty+'<br>';
+    if(o.items&&o.items.length) for(var j=0;j<o.items.length;j++) items+=escapeHtml(o.items[j].name)+' x'+parseInt(o.items[j].qty,10)+'<br>';
     var d=new Date(o.created_at);
     var ds=d.toLocaleDateString('en-NP',{day:'numeric',month:'short',year:'numeric'})+'<br>'+d.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'});
     h+='<tr>';
     h+='<td><div class="order-id">#'+o.id+'</div></td>';
-    h+='<td><div class="order-name">'+o.name+'</div><div class="order-phone">'+o.phone+'</div></td>';
-    h+='<td><div class="order-address">'+o.address+'<br>'+o.city+', '+o.district+'</div></td>';
+    h+='<td><div class="order-name">'+escapeHtml(o.name)+'</div><div class="order-phone">'+escapeHtml(o.phone)+'</div></td>';
+    h+='<td><div class="order-address">'+escapeHtml(o.address)+'<br>'+escapeHtml(o.city)+', '+escapeHtml(o.district)+'</div></td>';
     h+='<td><div class="order-items">'+items+'</div></td>';
     h+='<td><div class="order-total">Rs '+o.total.toLocaleString()+'</div></td>';
-    h+='<td><span class="order-pay '+pc+'">'+o.payment_method+'</span></td>';
+    h+='<td><span class="order-pay '+pc+'">'+escapeHtml(o.payment_method)+'</span></td>';
     h+='<td><div class="order-date">'+ds+'</div></td>';
     h+='<td><select class="status-sel" onchange="updateOrderStatus('+o.id+',this.value)">';
     h+='<option value="pending"'+(o.status==='pending'?' selected':'')+'>Pending</option>';
