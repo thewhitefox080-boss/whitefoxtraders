@@ -1710,6 +1710,9 @@ function swImgIdxVariant(idx){
 
 function showHome(){
   navPush({type:'home'}, '');
+  sessionStorage.removeItem('lastProduct');
+  sessionStorage.removeItem('navigated');
+  sessionStorage.removeItem('currentPage');
   showPage('pg-home');
   setTimeout(function(){ initReveal(); }, 100);
 }
@@ -2212,15 +2215,19 @@ function restoreNavState(state){
   document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
   if(state && state.type === 'detail' && renderDetailUI(state.ri)){
     document.getElementById('pg-detail').classList.add('on');
+    sessionStorage.setItem('navigated', '1');
   } else if(state && state.type === 'cat' && state.catState){
     catState = state.catState;
     renderCatPage();
     document.getElementById('pg-cat').classList.add('on');
     sessionStorage.setItem('currentPage', 'cat');
     sessionStorage.setItem('catState', JSON.stringify(catState));
+    sessionStorage.removeItem('lastProduct');
+    sessionStorage.removeItem('navigated');
   } else {
     document.getElementById('pg-home').classList.add('on');
     sessionStorage.removeItem('lastProduct');
+    sessionStorage.removeItem('navigated');
     sessionStorage.removeItem('currentPage');
     setTimeout(initReveal, 50);
   }
@@ -2462,6 +2469,7 @@ fetch(API_URL + '/products')
       if(!isNaN(_dri) && products[_dri]){
         var _dstate = {type:'detail', ri:_dri};
         renderDetailUI(_dri);
+        sessionStorage.setItem('navigated', '1');
         document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
         document.getElementById('pg-detail').classList.add('on');
         history.replaceState(_dstate, '', initHash);
@@ -2480,6 +2488,11 @@ fetch(API_URL + '/products')
       }
       var _cstate = {type:'cat', catState: JSON.parse(JSON.stringify(catState))};
       renderCatPage();
+      // Being on a category page means no specific product is "active" — clear any
+      // stale flags left over from a previous product visit, or a later reload at
+      // home would wrongly trust them and reopen that old product.
+      sessionStorage.removeItem('lastProduct');
+      sessionStorage.removeItem('navigated');
       document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('on');});
       document.getElementById('pg-cat').classList.add('on');
       history.replaceState(_cstate, '', initHash);
@@ -2494,6 +2507,8 @@ fetch(API_URL + '/products')
       try{ catState = JSON.parse(savedCat); }catch(e){}
       renderCatPage();
       showPage('pg-cat');
+      sessionStorage.removeItem('lastProduct');
+      sessionStorage.removeItem('navigated');
       history.replaceState({type:'cat', catState: JSON.parse(JSON.stringify(catState))}, '', navHash({type:'cat', catState:catState}));
       navStack = [{type:'home'}, {type:'cat', catState: JSON.parse(JSON.stringify(catState))}];
     } else {
