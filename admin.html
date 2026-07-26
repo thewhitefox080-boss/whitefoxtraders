@@ -224,7 +224,7 @@ tr:hover td{background:#fafafa}
         <div><label>In Stock</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ap-stock" checked/><span class="toggle-slider"></span></label></div>
         <div><label>New Arrival</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ap-new"/><span class="toggle-slider"></span></label></div>
       </div>
-      <div class="form-group"><label>Stock Quantity (optional)</label><input type="number" min="0" id="ap-qty" placeholder="Leave blank for unlimited/untracked"/><div class="form-hint">If set, this auto-decreases with each order and blocks overselling. Leave blank to keep it simple (just use the In Stock toggle).</div></div>
+      <div class="form-group"><label>Stock Quantity (optional)</label><input type="number" min="0" id="ap-qty" placeholder="Leave blank for unlimited/untracked" oninput="if(parseInt(this.value)>0) document.getElementById('ap-stock').checked=true;"/><div class="form-hint">If set, this auto-decreases with each order and blocks overselling. Leave blank to keep it simple (just use the In Stock toggle).</div></div>
     </div>
     <div class="form-group"><label>Description</label><textarea id="ap-desc" placeholder="Short product description..."></textarea></div>
     <div class="form-section-label">Images (Cloudinary URLs)</div>
@@ -264,7 +264,7 @@ tr:hover td{background:#fafafa}
         <div><label>In Stock</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ep-stock"/><span class="toggle-slider"></span></label></div>
         <div><label>New Arrival</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="ep-new"/><span class="toggle-slider"></span></label></div>
       </div>
-      <div class="form-group"><label>Stock Quantity (optional)</label><input type="number" min="0" id="ep-qty" placeholder="Leave blank for unlimited/untracked"/><div class="form-hint">If set, this auto-decreases with each order and blocks overselling. Leave blank to keep it simple (just use the In Stock toggle).</div></div>
+      <div class="form-group"><label>Stock Quantity (optional)</label><input type="number" min="0" id="ep-qty" placeholder="Leave blank for unlimited/untracked" oninput="if(parseInt(this.value)>0) document.getElementById('ep-stock').checked=true;"/><div class="form-hint">If set, this auto-decreases with each order and blocks overselling. Leave blank to keep it simple (just use the In Stock toggle).</div></div>
     </div>
     <div class="form-group"><label>Description</label><textarea id="ep-desc"></textarea></div>
     <div class="form-section-label">Images (Cloudinary URLs)</div>
@@ -455,7 +455,7 @@ function renderProducts(list){
     h+='<td><div style="display:flex;align-items:center;gap:12px">'+img+'<div><div class="prod-name">'+p.name+'</div><div class="prod-brand">'+p.brand+'</div></div></div></td>';
     h+='<td><span class="prod-cat">'+p.cat+'</span></td>';
     h+='<td><input class="price-inp" type="number" value="'+p.price+'" id="price-'+p.id+'"/></td>';
-    h+='<td><input class="price-inp" type="number" min="0" placeholder="∞" style="width:70px" value="'+(p.stock_qty===null||p.stock_qty===undefined?'':p.stock_qty)+'" id="qty-'+p.id+'" title="Leave blank for unlimited/untracked stock"/></td>';
+    h+='<td><input class="price-inp" type="number" min="0" placeholder="∞" style="width:70px" value="'+(p.stock_qty===null||p.stock_qty===undefined?'':p.stock_qty)+'" id="qty-'+p.id+'" title="Leave blank for unlimited/untracked stock" oninput="if(parseInt(this.value)>0) document.getElementById(\'stock-'+p.id+'\').checked=true;"/></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.in_stock?' checked':'')+' id="stock-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.is_new?' checked':'')+' id="new-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><button class="save-btn" onclick="saveProduct('+p.id+',this)">Save</button><span class="saved-flash" id="flash-'+p.id+'">Saved ✓</span></td>';
