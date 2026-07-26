@@ -2180,7 +2180,9 @@ function navHash(state){
 
 function navPush(state, hash){
   navStack.push(state);
-  history.pushState(state, '', hash !== undefined ? hash : navHash(state));
+  var url = (hash !== undefined ? hash : navHash(state));
+  if(!url) url = window.location.pathname + window.location.search; // explicitly drop any existing #hash
+  history.pushState(state, '', url);
 }
 
 // Site back button — go to previous in stack
