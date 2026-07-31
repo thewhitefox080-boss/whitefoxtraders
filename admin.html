@@ -64,6 +64,9 @@ tr:hover td{background:#fafafa}
 .pay-esewa{background:#e8f5e9;color:#2d8a4e}
 .pay-fonepay{background:#fde8e8;color:#e31f26}
 .pay-cod{background:#f0f0f0;color:#515154}
+.order-txn{font-size:10.5px;line-height:1.5;margin-top:5px}
+.order-txn-ok{color:#1a7a3c;font-weight:600}
+.order-txn-pending{color:#c0392b;font-weight:600}
 .order-date{font-size:12px;color:#86868b}
 .status-sel{border:0.5px solid #e8e8ed;border-radius:8px;padding:5px 8px;font-size:12px;font-family:'Inter',sans-serif;background:#fff;cursor:pointer;outline:none}
 .status-sel:focus{border-color:#0a0a0a}
@@ -396,6 +399,14 @@ function renderOrders(){
   for(var i=0;i<filtered.length;i++){
     var o=filtered[i];
     var pc=o.payment_method==='eSewa'?'pay-esewa':o.payment_method==='FonePay'?'pay-fonepay':'pay-cod';
+    var payExtra = '';
+    if(o.payment_method !== 'COD'){
+      if(o.payment_confirmed_at){
+        payExtra = '<div class="order-txn order-txn-ok">✓ Confirmed' + (o.transaction_id ? '<br>Txn: '+escapeHtml(o.transaction_id) : '') + '</div>';
+      } else {
+        payExtra = '<div class="order-txn order-txn-pending">Awaiting payment</div>';
+      }
+    }
     var items='';
     if(o.items&&o.items.length) for(var j=0;j<o.items.length;j++) items+=escapeHtml(o.items[j].name)+' x'+parseInt(o.items[j].qty,10)+'<br>';
     var d=new Date(o.created_at);
@@ -406,7 +417,7 @@ function renderOrders(){
     h+='<td><div class="order-address">'+escapeHtml(o.address)+'<br>'+escapeHtml(o.city)+', '+escapeHtml(o.district)+'</div></td>';
     h+='<td><div class="order-items">'+items+'</div></td>';
     h+='<td><div class="order-total">Rs '+o.total.toLocaleString()+'</div></td>';
-    h+='<td><span class="order-pay '+pc+'">'+escapeHtml(o.payment_method)+'</span></td>';
+    h+='<td><span class="order-pay '+pc+'">'+escapeHtml(o.payment_method)+'</span>'+payExtra+'</td>';
     h+='<td><div class="order-date">'+ds+'</div></td>';
     h+='<td><select class="status-sel" onchange="updateOrderStatus('+o.id+',this.value)">';
     h+='<option value="pending"'+(o.status==='pending'?' selected':'')+'>Pending</option>';
