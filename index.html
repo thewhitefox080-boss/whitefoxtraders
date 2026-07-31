@@ -501,6 +501,12 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 .succ-pay-note b{color:var(--black)}
 .succ-pay-pending{font-size:12px;color:var(--g3);line-height:1.5;padding-top:12px;border-top:0.5px solid var(--g2);width:100%}
 .succ-pay-pending b{color:var(--accent)}
+.succ-pay-form{display:flex;flex-direction:column;gap:8px;width:100%;margin-bottom:14px}
+.succ-txn-inp{width:100%;padding:11px 14px;border-radius:100px;border:1px solid var(--g2);font-family:'Inter',sans-serif;font-size:13px;background:#fff;box-sizing:border-box}
+.succ-txn-inp:focus{outline:none;border-color:var(--accent)}
+.succ-txn-btn{width:100%;background:var(--black);color:#fff;border:none;padding:12px 20px;border-radius:100px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer}
+.succ-txn-btn:disabled{opacity:0.5;cursor:not-allowed}
+.succ-pay-confirmed{font-size:13.5px;font-weight:600;color:#1a7a3c;background:#e8f7ee;padding:12px 14px;border-radius:12px;margin-bottom:14px;width:100%;box-sizing:border-box}
 
 /* =====================
    MOBILE RESPONSIVE
@@ -1190,6 +1196,11 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     <div class="succ-pay-id" id="succ-pay-id"></div>
     <div class="succ-pay-amt">Rs <span id="succ-pay-amount"></span></div>
     <div class="succ-pay-note">Please mention <b id="succ-pay-orderno"></b> in your payment remarks so we can match it to your order.</div>
+    <div class="succ-pay-form" id="succ-pay-form">
+      <input type="text" id="succ-txn-input" placeholder="Transaction ID (optional, speeds up verification)" class="succ-txn-inp"/>
+      <button class="succ-txn-btn" id="succ-txn-btn" onclick="confirmPayment()">I've completed payment</button>
+    </div>
+    <div class="succ-pay-confirmed" id="succ-pay-confirmed" style="display:none">✓ Thanks! We'll verify your payment and confirm your order shortly.</div>
     <div class="succ-pay-pending">Your order is saved as <b>pending</b> — we'll confirm and dispatch once we've verified your payment.</div>
   </div>
 
@@ -1325,6 +1336,7 @@ document.querySelectorAll('.logo').forEach(function(el){el.src=LOGO;});
 var products=[];
 var API_URL='https://whitefoxtraders-backend.onrender.com';
 var cart=[],curP=null,fBrand='all',fCat='all',fPrice=null,fSort='def',fSearch='';
+var pendingPaymentOrderId = null; // tracks the order awaiting eSewa/FonePay confirmation on the success screen
 var bColors={Anker:'#185FA5',Soundcore:'#0F6E56',UGreen:'#3B6D11'};
 var savedState=null;
 
@@ -2171,12 +2183,18 @@ function placeOrder(){
       document.getElementById('succ-pg').classList.add('on');
       var payBox = document.getElementById('succ-pay-box');
       if(payMethod === 'eSewa' || payMethod === 'FonePay'){
+        pendingPaymentOrderId = data.order.id;
         document.getElementById('succ-title').textContent = 'Almost there — payment pending';
         document.getElementById('succ-desc').textContent = 'Scan the QR below to complete your ' + payMethod + ' payment.';
         document.getElementById('succ-pay-qr').src = payMethod === 'eSewa' ? ESEWA_QR : FONEPAY_QR;
         document.getElementById('succ-pay-id').textContent = payMethod === 'eSewa' ? 'Anil Shrestha · eSewa 9818180469' : 'White Fox Traders · FonePay';
         document.getElementById('succ-pay-amount').textContent = data.order.total.toLocaleString();
         document.getElementById('succ-pay-orderno').textContent = 'Order #' + data.order.id;
+        document.getElementById('succ-txn-input').value = '';
+        document.getElementById('succ-pay-form').style.display = 'flex';
+        document.getElementById('succ-pay-confirmed').style.display = 'none';
+        var btn = document.getElementById('succ-txn-btn');
+        btn.disabled = false; btn.textContent = "I've completed payment";
         payBox.style.display = 'flex';
       } else {
         document.getElementById('succ-title').textContent = 'Order placed!';
@@ -2194,8 +2212,39 @@ function placeOrder(){
 
 function resetAll(){
   cart=[];updateBadge();
+  pendingPaymentOrderId = null;
   document.getElementById('succ-pg').classList.remove('on');
   goHome();
+}
+
+function confirmPayment(){
+  if(!pendingPaymentOrderId) return;
+  var txnInput = document.getElementById('succ-txn-input');
+  var btn = document.getElementById('succ-txn-btn');
+  btn.disabled = true;
+  btn.textContent = 'Confirming...';
+  fetch(API_URL + '/orders/' + pendingPaymentOrderId + '/confirm-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transaction_id: txnInput.value.trim() })
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(data){
+    if(data.success){
+      document.getElementById('succ-pay-form').style.display = 'none';
+      document.getElementById('succ-pay-confirmed').style.display = 'block';
+      pendingPaymentOrderId = null;
+    } else {
+      alert(data.error || 'Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.textContent = "I've completed payment";
+    }
+  })
+  .catch(function(){
+    alert('Could not connect. Please check your internet and try again.');
+    btn.disabled = false;
+    btn.textContent = "I've completed payment";
+  });
 }
 
 // Navigation stack for browser back button.
