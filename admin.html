@@ -200,8 +200,8 @@ tr:hover td{background:#fafafa}
       <input class="prod-search" type="text" placeholder="Search products..." oninput="filterProds(this.value)"/>
       <div class="prod-table-wrap">
         <table>
-          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>Qty</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Edit</th><th>Delete</th></tr></thead>
-          <tbody id="products-tbody"><tr><td colspan="9" class="loading">Loading products...</td></tr></tbody>
+          <thead><tr><th>Product</th><th>Category</th><th>Price (Rs)</th><th>Was (Rs)</th><th>Qty</th><th>In Stock</th><th>New Arrival</th><th>Save</th><th>Edit</th><th>Delete</th></tr></thead>
+          <tbody id="products-tbody"><tr><td colspan="10" class="loading">Loading products...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -220,6 +220,7 @@ tr:hover td{background:#fafafa}
     <div class="form-row">
       <div class="form-group"><label>Category *</label><select id="ap-cat" onchange="handleCatChange('ap-cat','ap-cat-custom')"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option><option value="projectors">Projectors</option><option value="__custom__">Custom...</option></select><input type="text" id="ap-cat-custom" placeholder="Type new category" style="display:none;margin-top:8px"/></div>
       <div class="form-group"><label>Price (Rs) *</label><input type="number" id="ap-price" placeholder="e.g. 4500" min="0"/></div>
+      <div class="form-group"><label>Was Price (Rs, optional)</label><input type="number" id="ap-compare-price" placeholder="Leave blank for no discount shown" min="0"/><div class="form-hint">If set higher than Price, shows as a struck-through "was" price on the site (e.g. price drop / sale).</div></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Icon (emoji)</label><input type="text" id="ap-icon" placeholder="&#128230;"/><div class="form-hint">Used if no images are added</div></div>
@@ -260,6 +261,7 @@ tr:hover td{background:#fafafa}
     <div class="form-row">
       <div class="form-group"><label>Category *</label><select id="ep-cat" onchange="handleCatChange('ep-cat','ep-cat-custom')"><option value="">Select category</option><option value="earbuds">Earbuds</option><option value="headphones">Headphones</option><option value="speakers">Speakers</option><option value="cables">Cables</option><option value="chargers">Chargers</option><option value="powerbanks">Power Banks</option><option value="accessories">Accessories</option><option value="projectors">Projectors</option><option value="__custom__">Custom...</option></select><input type="text" id="ep-cat-custom" placeholder="Type new category" style="display:none;margin-top:8px"/></div>
       <div class="form-group"><label>Price (Rs) *</label><input type="number" id="ep-price" min="0"/></div>
+      <div class="form-group"><label>Was Price (Rs, optional)</label><input type="number" id="ep-compare-price" placeholder="Leave blank for no discount shown" min="0"/><div class="form-hint">If set higher than Price, shows as a struck-through "was" price on the site (e.g. price drop / sale).</div></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Icon (emoji)</label><input type="text" id="ep-icon"/><div class="form-hint">Used if no images are added</div></div>
@@ -445,7 +447,7 @@ function updateOrderStatus(id, status){
 
 /* ---- PRODUCTS ---- */
 function loadProducts(){
-  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="9" class="loading">Loading products...</td></tr>';
+  document.getElementById('products-tbody').innerHTML = '<tr><td colspan="10" class="loading">Loading products...</td></tr>';
   fetch(API_URL+'/admin/products', {headers:{'Authorization':'Bearer '+authToken}})
   .then(function(r){ if(r.status===401){doLogout();return null;} return r.json(); })
   .then(function(data){
@@ -454,7 +456,7 @@ function loadProducts(){
     renderProducts(allProducts);
   })
   .catch(function(){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="9" class="empty">Could not load products.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="10" class="empty">Could not load products.</td></tr>';
   });
 }
 
@@ -466,7 +468,7 @@ function filterProds(val){
 
 function renderProducts(list){
   if(!list.length){
-    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="9" class="empty">No products found.</td></tr>';
+    document.getElementById('products-tbody').innerHTML = '<tr><td colspan="10" class="empty">No products found.</td></tr>';
     return;
   }
   var h='';
@@ -477,6 +479,7 @@ function renderProducts(list){
     h+='<td><div style="display:flex;align-items:center;gap:12px">'+img+'<div><div class="prod-name">'+p.name+'</div><div class="prod-brand">'+p.brand+'</div></div></div></td>';
     h+='<td><span class="prod-cat">'+p.cat+'</span></td>';
     h+='<td><input class="price-inp" type="number" value="'+p.price+'" id="price-'+p.id+'"/></td>';
+    h+='<td><input class="price-inp" type="number" min="0" placeholder="none" style="width:80px" value="'+(p.compare_at_price===null||p.compare_at_price===undefined?'':p.compare_at_price)+'" id="cap-'+p.id+'" title="Optional — shows as a struck-through \'was\' price if higher than current price"/></td>';
     h+='<td><input class="price-inp" type="number" min="0" placeholder="∞" style="width:70px" value="'+(p.stock_qty===null||p.stock_qty===undefined?'':p.stock_qty)+'" id="qty-'+p.id+'" title="Leave blank for unlimited/untracked stock" oninput="if(parseInt(this.value)>0) document.getElementById(\'stock-'+p.id+'\').checked=true;"/></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.in_stock?' checked':'')+' id="stock-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
     h+='<td><label class="toggle"><input type="checkbox"'+(p.is_new?' checked':'')+' id="new-'+p.id+'"/><span class="toggle-slider"></span></label></td>';
@@ -490,17 +493,20 @@ function renderProducts(list){
 
 function saveProduct(id, btn){
   var price = parseInt(document.getElementById('price-'+id).value);
+  var capRaw = document.getElementById('cap-'+id).value.trim();
+  var compareAtPrice = capRaw === '' ? null : parseInt(capRaw, 10);
   var qtyRaw = document.getElementById('qty-'+id).value.trim();
   var stockQty = qtyRaw === '' ? null : parseInt(qtyRaw, 10);
   var inStock = document.getElementById('stock-'+id).checked;
   var isNew = document.getElementById('new-'+id).checked;
   if(isNaN(price) || price < 0){ alert('Invalid price.'); return; }
+  if(compareAtPrice !== null && (isNaN(compareAtPrice) || compareAtPrice < 0)){ alert('Invalid "was" price — leave blank if there\'s no discount to show.'); return; }
   if(stockQty !== null && (isNaN(stockQty) || stockQty < 0)){ alert('Invalid quantity — leave blank for unlimited/untracked stock.'); return; }
   btn.disabled = true;
   btn.textContent = '...';
   fetch(API_URL+'/admin/products/'+id, {
     method:'PATCH', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body: JSON.stringify({price:price, in_stock:inStock, is_new:isNew, stock_qty:stockQty})
+    body: JSON.stringify({price:price, in_stock:inStock, is_new:isNew, stock_qty:stockQty, compare_at_price:compareAtPrice})
   })
   .then(function(r){return r.json();})
   .then(function(data){
@@ -510,7 +516,7 @@ function saveProduct(id, btn){
       var flash = document.getElementById('flash-'+id);
       flash.style.display = 'inline';
       setTimeout(function(){ flash.style.display='none'; }, 2000);
-      for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ allProducts[i].price=price; allProducts[i].in_stock=inStock; allProducts[i].is_new=isNew; allProducts[i].stock_qty=stockQty; }
+      for(var i=0;i<allProducts.length;i++) if(allProducts[i].id===id){ allProducts[i].price=price; allProducts[i].in_stock=inStock; allProducts[i].is_new=isNew; allProducts[i].stock_qty=stockQty; allProducts[i].compare_at_price=compareAtPrice; }
     } else { alert('Failed to save.'); }
   })
   .catch(function(){ btn.disabled=false; btn.textContent='Save'; alert('Could not save.'); });
@@ -571,7 +577,7 @@ function openAddModal(){
 }
 function closeAddModal(){
   document.getElementById('add-modal').classList.remove('on');
-  ['ap-name','ap-brand','ap-price','ap-icon','ap-desc','ap-qty'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['ap-name','ap-brand','ap-price','ap-icon','ap-desc','ap-qty','ap-compare-price'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('ap-cat').value='';
   document.getElementById('ap-cat-custom').style.display='none';
   document.getElementById('ap-cat-custom').value='';
@@ -648,14 +654,17 @@ function submitNewProduct(){
   var brand=document.getElementById('ap-brand').value.trim();
   var cat=getCategory('ap-cat','ap-cat-custom');
   var price=parseInt(document.getElementById('ap-price').value);
+  var capRaw=document.getElementById('ap-compare-price').value.trim();
+  var compareAtPrice=capRaw===''?null:parseInt(capRaw,10);
   var qtyRaw=document.getElementById('ap-qty').value.trim();
   var stockQty=qtyRaw===''?null:parseInt(qtyRaw,10);
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
+  if(compareAtPrice!==null && (isNaN(compareAtPrice)||compareAtPrice<0)){ alert('Invalid "was" price — leave blank if there\'s no discount to show.'); return; }
   if(stockQty!==null && (isNaN(stockQty)||stockQty<0)){ alert('Invalid stock quantity — leave blank for unlimited/untracked.'); return; }
   var btn=document.getElementById('ap-submit'); btn.disabled=true; btn.textContent='Adding...';
   fetch(API_URL+'/admin/products',{
     method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,stock_qty:stockQty,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list'),variants:getVariants('ap-variants-list')})
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,compare_at_price:compareAtPrice,icon:document.getElementById('ap-icon').value.trim()||'box',description:document.getElementById('ap-desc').value.trim(),in_stock:document.getElementById('ap-stock').checked,is_new:document.getElementById('ap-new').checked,stock_qty:stockQty,images:getImages('ap-images-list'),specs:getSpecs('ap-specs-list'),features:getFeatures('ap-features-list'),variants:getVariants('ap-variants-list')})
   })
   .then(function(r){return r.json();})
   .then(function(data){
@@ -686,6 +695,7 @@ function openEditModal(id){
     epCatCustom.value = '';
   }
   document.getElementById('ep-price').value=p.price||0;
+  document.getElementById('ep-compare-price').value=(p.compare_at_price===null||p.compare_at_price===undefined)?'':p.compare_at_price;
   document.getElementById('ep-qty').value=(p.stock_qty===null||p.stock_qty===undefined)?'':p.stock_qty;
   document.getElementById('ep-icon').value=p.icon||'';
   document.getElementById('ep-desc').value=p.description||'';
@@ -721,14 +731,17 @@ function submitEditProduct(){
   var brand=document.getElementById('ep-brand').value.trim();
   var cat=getCategory('ep-cat','ep-cat-custom');
   var price=parseInt(document.getElementById('ep-price').value);
+  var capRaw=document.getElementById('ep-compare-price').value.trim();
+  var compareAtPrice=capRaw===''?null:parseInt(capRaw,10);
   var qtyRaw=document.getElementById('ep-qty').value.trim();
   var stockQty=qtyRaw===''?null:parseInt(qtyRaw,10);
   if(!name||!brand||!cat||isNaN(price)||price<0){ alert('Please fill in Name, Brand, Category and Price.'); return; }
+  if(compareAtPrice!==null && (isNaN(compareAtPrice)||compareAtPrice<0)){ alert('Invalid "was" price — leave blank if there\'s no discount to show.'); return; }
   if(stockQty!==null && (isNaN(stockQty)||stockQty<0)){ alert('Invalid stock quantity — leave blank for unlimited/untracked.'); return; }
   var btn=document.getElementById('ep-submit'); btn.disabled=true; btn.textContent='Saving...';
   fetch(API_URL+'/admin/products/'+editingId,{
     method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,stock_qty:stockQty,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list'),variants:getVariants('ep-variants-list')})
+    body:JSON.stringify({name:name,brand:brand,cat:cat,price:price,compare_at_price:compareAtPrice,icon:document.getElementById('ep-icon').value.trim()||'box',description:document.getElementById('ep-desc').value.trim(),in_stock:document.getElementById('ep-stock').checked,is_new:document.getElementById('ep-new').checked,stock_qty:stockQty,images:getImages('ep-images-list'),specs:getSpecs('ep-specs-list'),features:getFeatures('ep-features-list'),variants:getVariants('ep-variants-list')})
   })
   .then(function(r){return r.json();})
   .then(function(data){
