@@ -202,6 +202,8 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 .pname{font-size:12px;color:var(--black);line-height:1.4;margin-bottom:9px;min-height:33px}
 .pfoot{display:flex;align-items:center;justify-content:space-between}
 .pprice{font-size:14px;font-weight:600;letter-spacing:-0.3px}
+.was-price{font-size:12px;font-weight:500;color:var(--g3);text-decoration:line-through;margin-left:6px}
+.off-badge{font-size:10.5px;font-weight:700;color:#c0392b;background:#fdeaea;padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:middle}
 .padd{width:27px;height:27px;background:var(--black);color:#fff;border:none;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:'Inter',sans-serif;transition:background 0.15s}
 .padd:hover{background:#333}
 .padd.ok{background:#28a745}
@@ -258,6 +260,8 @@ nav.scrolled{background:rgba(255,255,255,0.98);box-shadow:0 2px 20px rgba(0,0,0,
 
 /* FEATURED PRODUCTS */
 .feat-sec{padding:56px 48px 0}
+.pd-sec{padding:56px 48px 0}
+.pd-heading{color:#c0392b}
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .feat-card{background:#fff;border:0.5px solid var(--g2);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s,border-color 0.3s;position:relative}
 .feat-card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,0.10);border-color:#c7c7cc}
@@ -379,6 +383,8 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
 .dbadge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 11px;border-radius:100px;color:#fff;margin-bottom:14px}
 .dname{font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1.15;margin-bottom:11px}
 .dprice{font-size:26px;font-weight:600;letter-spacing:-0.5px;margin-bottom:6px}
+.dprice .was-price{font-size:16px;margin-left:10px}
+.dprice .off-badge{font-size:13px;padding:3px 8px;margin-left:8px}
 .dprice-sub{font-size:13px;color:var(--g3);margin-bottom:22px}
 .ddesc{font-size:15px;color:var(--g4);line-height:1.7;margin-bottom:24px;font-weight:300}
 .dbtns{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap}
@@ -585,6 +591,7 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
   .hbs-bg{background-position:center center;background-size:cover}
   .hbs-arrow{display:none}
   .na-sec{padding:32px 16px 0}
+  .pd-sec{padding:32px 16px 0}
   .na-scroll{grid-template-columns:repeat(2,1fr);gap:10px}
   .na-img{height:160px}
   .brand-sec{padding:32px 16px 0}
@@ -856,6 +863,15 @@ footer{background:#1d1d1f;padding:56px 48px 24px}
     <div class="load-more-wrap" style="padding-top:20px">
       <button class="load-more-btn" id="na-load-btn" onclick="renderNewArrivals(true)" style="display:none">Load more</button>
     </div>
+  </div>
+
+  <!-- PRICE DROPS -->
+  <div class="pd-sec reveal" id="pd-sec" style="display:none">
+    <div class="sec-header">
+      <div class="sec-heading pd-heading">🔥 Price Drops</div>
+      <a class="sec-viewall" onclick="openCatPage('all')">View all →</a>
+    </div>
+    <div class="feat-grid" id="pd-grid"></div>
   </div>
 
   <!-- FEATURED PRODUCTS -->
@@ -1351,6 +1367,15 @@ function restoreFilterState(){
 }
 
 function fmt(n){return 'Rs '+n.toLocaleString();}
+// Returns the inner HTML for a price display — just the current price if no discount,
+// or current price + struck-through "was" price + a percentage-off badge if comparePrice
+// is set and genuinely higher (guards against a typo'd lower value showing a fake markup).
+function priceFrag(p){
+  var hasDiscount = p.comparePrice && p.comparePrice > p.price;
+  if(!hasDiscount) return fmt(p.price);
+  var pct = Math.round((1 - p.price / p.comparePrice) * 100);
+  return fmt(p.price) + '<span class="was-price">'+fmt(p.comparePrice)+'</span><span class="off-badge">-'+pct+'%</span>';
+}
 
 // Sinks out-of-stock items to the bottom without disturbing the relative order
 // established by whatever sort ran before this (Array.sort is stable in modern engines).
@@ -1431,7 +1456,7 @@ function render(){
     var iconHtml = (!x.images || x.images.length === 0) ? '<span style="font-size:50px">'+x.icon+'</span>' : '';
     h+='<div class="pcard-img">'+iconHtml+img+'<span class="pbadge '+bc+'">'+x.brand+'</span>'+(oos?'<span class="oos-tag">Out of stock</span>':'')+'</div>';
     h+='<div class="pinfo"><div class="pname">'+x.name+'</div>';
-    h+='<div class="pfoot"><span class="pprice">'+fmt(x.price)+'</span>';
+    h+='<div class="pfoot"><span class="pprice">'+priceFrag(x)+'</span>';
     h+=oos?'<button class="padd oos-disabled" onclick="event.stopPropagation()">+</button></div></div></div>':'<button class="padd" id="pa'+ri+'" onclick="event.stopPropagation();addCart('+ri+',this)">+</button></div></div></div>';
   }
   g.innerHTML=h;
@@ -1645,7 +1670,7 @@ function renderCatGrid(){
     h += '<div class="pcard'+(oos?' oos':'')+'" onclick="openDetail('+ri+')">';
     h += '<div class="pcard-img">'+img+'<span class="pbadge '+bc+'">'+x.brand+'</span>'+(oos?'<span class="oos-tag">Out of stock</span>':'<button class="qv-btn" onclick="event.stopPropagation();openQV('+ri+')">👁 Quick View</button>')+'</div>';
     h += '<div class="pinfo"><div class="pname">'+x.name+'</div>';
-    h += '<div class="pfoot"><span class="pprice">'+fmt(x.price)+'</span>';
+    h += '<div class="pfoot"><span class="pprice">'+priceFrag(x)+'</span>';
     h += oos?'<button class="padd oos-disabled" onclick="event.stopPropagation()">+</button></div></div></div>':'<button class="padd" onclick="event.stopPropagation();addCart('+ri+',this)">+</button></div></div></div>';
   });
   document.getElementById('cat-grid').innerHTML = h;
@@ -1760,7 +1785,7 @@ function renderDetailUI(ri){
   badge.textContent=p.brand;
   badge.style.background=bColors[p.brand]||'#333';
   document.getElementById('dname').textContent=p.name;
-  document.getElementById('dprice').textContent=fmt(p.price);
+  document.getElementById('dprice').innerHTML=priceFrag(p);
   document.getElementById('ddesc').textContent=p.desc;
   document.getElementById('dbtn').textContent='Add to bag';
   document.getElementById('dbtn').classList.remove('ok');
@@ -1944,11 +1969,48 @@ function renderFeatured(){
       +'<div class="feat-info">'
       +'<div class="feat-brand">'+p.brand+'</div>'
       +'<div class="feat-name">'+p.name+'</div>'
-      +'<div class="feat-price">'+fmt(p.price)+'</div>'
+      +'<div class="feat-price">'+priceFrag(p)+'</div>'
       +'</div></div>';
   });
   var el = document.getElementById('feat-grid');
   if(el) el.innerHTML = html;
+}
+
+function renderPriceDrops(){
+  var dropped = products.filter(function(p){
+    return p.inStock !== false && p.comparePrice && p.comparePrice > p.price;
+  });
+  var section = document.getElementById('pd-sec');
+  if(!dropped.length){
+    if(section) section.style.display = 'none';
+    return;
+  }
+  if(section) section.style.display = 'block';
+  // Biggest discount first — leads with the most compelling deals
+  dropped.sort(function(a,b){
+    var pctA = 1 - a.price/a.comparePrice;
+    var pctB = 1 - b.price/b.comparePrice;
+    return pctB - pctA;
+  });
+  dropped = dropped.slice(0,8);
+  var html = '';
+  dropped.forEach(function(p){
+    var ri = products.indexOf(p);
+    var img = p.images&&p.images.length ? '<img src="'+p.images[0]+'" alt="'+p.name+'"/>' : '<span style="font-size:48px">'+p.icon+'</span>';
+    var bColor = bColors[p.brand] || '#333';
+    html += '<div class="feat-card" onclick="openDetail('+ri+')">'
+      +'<div class="feat-img">'+img
+      +'<span class="feat-brand-badge" style="background:'+bColor+'">'+p.brand+'</span>'
+      +'<button class="qv-btn" onclick="event.stopPropagation();openQV('+ri+')">👁 Quick View</button>'
+      +'</div>'
+      +'<div class="feat-info">'
+      +'<div class="feat-brand">'+p.brand+'</div>'
+      +'<div class="feat-name">'+p.name+'</div>'
+      +'<div class="feat-price">'+priceFrag(p)+'</div>'
+      +'</div></div>';
+  });
+  var pdEl = document.getElementById('pd-grid');
+  if(pdEl) pdEl.innerHTML = html;
 }
 
 var naVisible = 6;
@@ -1968,7 +2030,7 @@ function renderNewArrivals(more){
       +'<div class="na-info">'
       +'<div class="na-brand">'+p.brand+'</div>'
       +'<div class="na-name">'+p.name+'</div>'
-      +'<div class="na-price">'+fmt(p.price)+'</div>'
+      +'<div class="na-price">'+priceFrag(p)+'</div>'
       +'</div></div>';
   });
   var el = document.getElementById('na-scroll');
@@ -2345,7 +2407,8 @@ function mapProduct(p) {
     images: p.images || [],
     inStock: p.in_stock,
     isNew: p.is_new,
-    variants: p.variants || []
+    variants: p.variants || [],
+    comparePrice: p.compare_at_price
   };
 }
 
@@ -2451,7 +2514,7 @@ function renderRelated(ri){
       +'<div class="feat-info">'
       +'<div class="feat-brand">'+x.brand+'</div>'
       +'<div class="feat-name">'+x.name+'</div>'
-      +'<div class="feat-price">'+fmt(x.price)+'</div>'
+      +'<div class="feat-price">'+priceFrag(x)+'</div>'
       +'</div></div>';
   });
   document.getElementById('related-grid').innerHTML = html;
@@ -2543,6 +2606,7 @@ fetch(API_URL + '/products')
   .then(function(data){
     products = data.map(mapProduct);
     renderNewArrivals();
+    renderPriceDrops();
     renderFeatured();
     initReveal();
     
