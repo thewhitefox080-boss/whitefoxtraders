@@ -1711,21 +1711,46 @@ function renderVariants(p, selectedIdx){
   el.innerHTML = html;
 }
 
+// Builds the combined base+variant image gallery, skipping any image URL that's
+// already appeared earlier in the list — fixes duplicate thumbnails when a variant
+// reuses a photo that's already in the base product images. Used by both
+// selectVariant() and setImgFromAll() so their indexing always stays in sync.
+function buildAllImages(p){
+  var seen = {};
+  var allImages = [];
+  var variantStartIdx = {};
+  (p.images||[]).forEach(function(src){
+    if(!seen[src]){ seen[src] = true; allImages.push(src); }
+  });
+  if(p.variants){
+    p.variants.forEach(function(v, vi){
+      if(!v.images || !v.images.length) return;
+      var firstNewIdx = null;
+      v.images.forEach(function(src){
+        if(!seen[src]){
+          seen[src] = true;
+          if(firstNewIdx === null) firstNewIdx = allImages.length;
+          allImages.push(src);
+        }
+      });
+      // If every image for this variant already exists earlier in the gallery
+      // (e.g. it reuses a base product photo), jump to that existing image
+      // instead of creating a duplicate thumbnail.
+      variantStartIdx[vi] = firstNewIdx !== null ? firstNewIdx : allImages.indexOf(v.images[0]);
+    });
+  }
+  return { allImages: allImages, variantStartIdx: variantStartIdx };
+}
+
 function selectVariant(idx){
   var p = products[curP];
   if(!p || !p.variants || !p.variants[idx]) return;
   curVariantIdx = idx;
   renderVariants(p, idx);
 
-  // Build combined gallery: base images + all variant images
-  var allImages = (p.images||[]).slice();
-  var variantStartIdx = {};
-  p.variants.forEach(function(v, vi){
-    if(v.images && v.images.length){
-      variantStartIdx[vi] = allImages.length;
-      allImages = allImages.concat(v.images);
-    }
-  });
+  var built = buildAllImages(p);
+  var allImages = built.allImages;
+  var variantStartIdx = built.variantStartIdx;
 
   // Rebuild thumbs with all images
   var thumbsEl = document.getElementById('dthumbs');
@@ -1750,10 +1775,8 @@ function selectVariant(idx){
 // allImages is built at call time — store for thumb clicks
 var _currentAllImages = [];
 function setImgFromAll(idx){
-  // Rebuild allImages from current product + variants
   var p = products[curP];
-  var allImages = (p.images||[]).slice();
-  if(p.variants) p.variants.forEach(function(v){ if(v.images) allImages = allImages.concat(v.images); });
+  var allImages = buildAllImages(p).allImages;
   var src = allImages[idx];
   if(!src) return;
   curImg = idx;
