@@ -410,7 +410,7 @@ function renderOrders(){
       }
     }
     var items='';
-    if(o.items&&o.items.length) for(var j=0;j<o.items.length;j++) items+=escapeHtml(o.items[j].name)+' x'+parseInt(o.items[j].qty,10)+'<br>';
+    if(o.items&&o.items.length) for(var j=0;j<o.items.length;j++) items+=escapeHtml(o.items[j].name)+(o.items[j].color?' <b>('+escapeHtml(o.items[j].color)+')</b>':'')+' x'+parseInt(o.items[j].qty,10)+'<br>';
     var d=new Date(o.created_at);
     var ds=d.toLocaleDateString('en-NP',{day:'numeric',month:'short',year:'numeric'})+'<br>'+d.toLocaleTimeString('en-NP',{hour:'2-digit',minute:'2-digit'});
     h+='<tr>';
